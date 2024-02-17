@@ -5,9 +5,10 @@ User Requirements:
 •	The system should enable users to search for weather forecasts based on region, city, and province. It should also provide filtering options to narrow search results based on specific attributes or preferences.
 •	The system should allow for users to view predicted future weather forecasts for different regions. These forecasts should include temperature, rainfall, wind speed, and air quality
 •	The system should allow for users to have a personalized dashboard that includes the weather forecasts for their location, future weather forecasts for their location, weather updates, and weather news based on their location 
-•	As an admin I want to be able to view the daily activity for up to the past year on the website to make sure activity level is high and people are happily engaging with our site
-•	As an admin I want my own customizable dashboard where I can view site activity, manage forecast data, and manage the site’s visual content (maps and charts) quickly and efficiently
-•	As an admin I want access to a full list of users with just their name, username, and email to keep track of how many people have registered for our site
+•	Admins should be able to view the daily activity for up to the past year on the website to make sure activity level is high and people are happily engaging with our site
+•	Admins should have their own customizable dashboard where they can view site activity, manage forecast data, and manage the site’s visual content (maps and charts) quickly and efficiently
+•	Admins should be able to access a full list of users limited to their name, username, and email to keep track of how many people have registered for our site
+![image](https://github.com/SevNielsen/Weather-or-not/assets/88605255/6a7052ab-d310-4e67-b8e5-cc8d5964e0d8)
 
 Functional Requirements:
 
