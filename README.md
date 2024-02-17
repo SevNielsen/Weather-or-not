@@ -8,7 +8,6 @@ User Requirements:
 •	Admins should be able to view the daily activity for up to the past year on the website to make sure activity level is high and people are happily engaging with our site
 •	Admins should have their own customizable dashboard where they can view site activity, manage forecast data, and manage the site’s visual content (maps and charts) quickly and efficiently
 •	Admins should be able to access a full list of users limited to their name, username, and email to keep track of how many people have registered for our site
-![image](https://github.com/SevNielsen/Weather-or-not/assets/88605255/6a7052ab-d310-4e67-b8e5-cc8d5964e0d8)
 
 Functional Requirements:
 
