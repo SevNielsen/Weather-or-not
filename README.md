@@ -47,6 +47,7 @@ Functional Requirements:
 
 10. Responsive Design
     The application should be compatible with various devices and screen sizes, including mobile phones, tablets, and desktop computers.
+
 Non-Functional Requirments:
 •	Product requirements: 
 •	Usability requirements:
@@ -87,6 +88,4 @@ Non-Functional Requirments:
 •	Safety/security requirements:
 •	Cybersecurity systems will be implemented to protect user data.
 •	The system must be capable of accurately displaying emergency weather notifications to users.
-
-
 
