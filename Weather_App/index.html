@@ -1,0 +1,34 @@
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<div id="mapid" style="height: 400px;"></div>
+<script>
+    var map = L.map('mapid').setView([51.505, -0.09], 13); // Set to your default location
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    var marker;
+
+    // Function to handle the click event on the map
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lon = e.latlng.lng;
+
+        // Remove existing marker
+        if (marker) {
+            map.removeLayer(marker);
+        }
+
+        // Add a marker to the map at the clicked location
+        marker = L.marker([lat, lon]).addTo(map);
+
+        // Now, make a request to your Flask backend to get the weather data
+        fetchWeatherData(lat, lon);
+    });
+
+    function fetchWeatherData(lat, lon) {
+        // Use fetch API to make a request to your Flask backend
+        // Handle the response and update the UI accordingly
+    }
+</script>
