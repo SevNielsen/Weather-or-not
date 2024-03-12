@@ -16,3 +16,11 @@ def logout():
 def sign_up():
     return render_template("signup.html")
 
+@auth.route('/dashboard')
+def dashboard():
+    return render_template("dashboard.html")
+
+@auth.route('/navbar')
+def navbar():
+    return render_template("navbar.html")
+
