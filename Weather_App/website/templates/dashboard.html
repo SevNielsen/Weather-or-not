@@ -1,17 +1,86 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <div class="input-group rounded">
-        <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-        <span class="input-group-text border-0" id="search-addon">
-          <i class="fas fa-search"></i>
-        </span>
+{% extends "navbar.html" %} {% block title %}Dashboard{% endblock %} {% block content
+    %}
+
+    <style>
+
+.custom-card {
+    background: linear-gradient(180deg, rgb(56, 113, 236), #c4c1c1 180%);
+    color: white;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.4);
+    border: none;
+    width: 500px; /* Adjust width as needed */
+    height: 200px; /* Adjust height as needed */
+}
+
+.custom-card .card-body {
+    padding: 20px;
+}
+
+/*
+
+#forecast div {
+float: left;
+width: 112px;
+margin-right: 20px;
+background: #3176bc;
+background: linear-gradient(0deg,rgb(101 156 207) 0%,rgb(50 104 177) 100%);
+border-radius: 9px;
+text-align: center;
+color: #fff;
+font-size: 19px;
+text-transform: uppercase;
+padding: 10px 0;
+min-height: 250px;
+}
+
+*/
+    </style>
+
+<div class="container">
+    <div class="row justify-content-end">
+      <div class="col-lg-4 mt-3">
+        <div class="input-group rounded">
+          <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" />
+          <!-- Replace the search icon with an image -->
+          <span class="input-group-text border-0" id="search-addon">
+            <input id="search_btn_airport" title="Search" alt="Search" src="//s1.twnmm.com/images/en_ca/magnifying-glass.png" type="image">
+          </span>
+        </div>
       </div>
-      
-</body>
-</html>
+    </div>
+  </div>
+
+  <!-- <div class="container">
+  <div class="card gr-2">
+    <div class="txt">
+      <h1>Web Front-End </br>
+SOLUTIONS</h1>
+      <p>How design is implemented on the web.</p>
+    </div>
+     <a href="#">more</a> 
+  <div class="ico-card">
+    <i class="fa fa-codepen"></i>
+  </div> 
+  </div>
+</div>
+</div> -->
+
+<div class="container">
+    <div class="row justify-content-start mt-5"> <!-- Changed justify-content-center to justify-content-start -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card custom-card">
+                <div class="card-body">
+                    <h5 class="card-title">Black Gradient Card</h5>
+                    <p class="card-text">This is a simple card with a black gradient background and shadow effect.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+  {% endblock %}
+
+
