@@ -73,6 +73,11 @@ def dashboard():
 @login_required
 def profile():
     username1 = current_user.username
-    return render_template("profile.html", logged_in = current_user, username = username1 )
+    firstName1 = current_user.first_name
+    lastName1 = current_user.last_name
+    email1 = current_user.email
+    notification1 = current_user.notifications
+    city1 = current_user.city
+    return render_template("profile.html", logged_in = current_user, username = username1, firstName = firstName1, lastName = lastName1, email = email1, notifications = notification1, city = city1 )
 #   return render_template("profile.html")
 
