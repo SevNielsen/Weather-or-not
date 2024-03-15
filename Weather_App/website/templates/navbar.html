@@ -30,25 +30,28 @@
   </head>
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target="#navbar"
-      >
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar">
         <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbar">
-        <div class="navbar-nav">
-          <a class="nav-item nav-link" id="home" href="/dashboard">Dashboard</a>
-          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-          <a class="nav-item nav-link" id="login" href="/login">Login</a>
-          <a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a>
-          <a class="nav-item nav-link" id="signUp" href="/settings">Profile</a>
-          
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+        <div class="navbar-nav mr-auto">
+            {% if logged_in.is_authenticated %}
+            <a class="nav-item nav-link" id="home" href="/dashboard">Dashboard</a>
+            <a class="nav-item nav-link" id="signUp" href="/settings">Profile</a>
+            <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
+            {% else %}
+            <a class="nav-item nav-link" id="home" href="/dashboard">Dashboard</a>
+            <a class="nav-item nav-link" id="login" href="/login">Login</a>
+            <a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a>
+            {% endif %}
         </div>
-      </div>
-    </nav>
+        <!-- Add the message "happy" here -->
+        <div class="navbar-nav">
+          <span class="navbar-text">Logged in as {{username}}</span>
+        </div>
+    </div>
+</nav>
+
 
     
 
