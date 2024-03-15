@@ -12,6 +12,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'Secret_Key'
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
     db.init_app(app)
+   
+
 
     from .views import views
     from .auth import auth
@@ -22,6 +24,13 @@ def create_app():
     from .models import Member
     with app.app_context():
         db.create_all()
+    
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+    @login_manager.user_loader
+    def load_member(id):
+        return Member.query.get(int(id))
 
     return app
 
