@@ -69,15 +69,43 @@ def dashboard():
     username1 = current_user.username
     return render_template("dashboard.html", logged_in = current_user, username = username1)
 
-@auth.route('/profile')
+@auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
-    username1 = current_user.username
-    firstName1 = current_user.first_name
-    lastName1 = current_user.last_name
-    email1 = current_user.email
-    notification1 = current_user.notifications
-    city1 = current_user.city
-    return render_template("profile.html", logged_in = current_user, username = username1, firstName = firstName1, lastName = lastName1, email = email1, notifications = notification1, city = city1 )
+    if request.method == 'POST':
+       # firstName = request.form.get('first_Name')
+       # lastName = request.form.get('last_Name')
+       # email = request.form.get('email')
+       # username = request.form.get('username')
+        #city = request.form.get('city')
+        #noti = bool(int(request.form.get('noti')))
+        if request.form.get('first_name'):
+            current_user.first_name = request.form.get('first_name')
+        if request.form.get('last_name'):
+            current_user.last_name = request.form.get('last_name')
+        if request.form.get('email'):
+            current_user.email = request.form.get('email')
+        #if request.form.get('username'):
+        #   current_user.username = request.form.get('username')
+        if request.form.get('city'):
+            current_user.city = request.form.get('city')
+        #if request.form.get('check'):
+        #    current_user.notifications = request.form.get(bool(int(request.form.get('check'))))
+        if request.form.get('check'):
+            current_user.notifications = True
+        else:
+            current_user.notifications = False
+        flash('Successfully Made Changes to Your Profile',category='changed')
+        db.session.commit()
+        
+
+
+  #  username1 = current_user.username
+   # firstName1 = current_user.first_name
+   # lastName1 = current_user.last_name
+   # email1 = current_user.email
+   # notification1 = current_user.notifications
+  #  city1 = current_user.city
+    return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 #   return render_template("profile.html")
 
