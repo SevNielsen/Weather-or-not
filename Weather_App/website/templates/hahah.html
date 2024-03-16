@@ -272,4 +272,59 @@ SOLUTIONS</h1>
 
   {% endblock %}
 
+  <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+      integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+      crossorigin="anonymous"
+    />
+
+    {% extends "navbar.html" %} 
+    {% block title %}Dashboard{% endblock %} 
+    {% block content %}
+    <style>
+        /* Your CSS styles */
+    </style>
+    
+    <script>
+        /* Your JavaScript code */
+    </script>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    {% if category == 'changed' %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    <div class="container rounded bg-white mt-5 mb-5">
+        <!-- Your HTML content -->
+    </div>
+    
+    {% endblock %}
+
+    from flask import flash, redirect, render_template, request, session, url_for
+
+@app.route('/your_route', methods=['GET', 'POST'])
+def your_route():
+    if request.method == 'POST':
+        # Your form processing code
+
+        # Assuming the form processing is successful
+        session['message'] = 'Your success message'
+        session['category'] = 'changed'
+        return redirect(url_for('your_route'))  # Redirect to the same route after processing the form
+
+    return render_template('your_template.html')
 

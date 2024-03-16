@@ -6,6 +6,9 @@
             background: rgb(2,0,36);
     background: linear-gradient(34deg, rgba(2,0,36,1) 0%, rgba(107,183,242,1) 0%, rgba(249,245,245,1) 100%);
 }
+.container {
+        min-height: 100vh; /* can maybe delete this later it makes the page bigger*/
+    }
 
 .form-control:focus {
     box-shadow: none;
@@ -117,6 +120,32 @@ input:checked + .slider:before {
 }
   
     </style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var checkBox = document.getElementById("myCheck");
+        var hiddenInput = document.querySelector("input[name='check']");
+        
+        checkBox.addEventListener("change", function() {
+            hiddenInput.value = checkBox.checked ? "1" : "0";
+            console.log("Checkbox state changed:", checkBox.checked);
+        });
+    });
+</script>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{%if messages%}
+{%if messages[0][0] == 'changed'%}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{messages[0][1]}}
+   <!--  <button type="button" class="close" data-dismiss="alert" aria-label="Close"> -->
+    <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+</div>
+{%endif%} 
+{%endif%}
+{%endwith%}
     <div class="container rounded bg-white mt-5 mb-5">
         <div class="row">
             <div class="col-md-5 border-right">
@@ -135,7 +164,7 @@ input:checked + .slider:before {
                     {%endif%}
                     {%if not city %}
                     <span class="text-black-50"> 
-                        Prefered City is None 
+                        Prefered City is None
                     </span>
                     {%else%}
                     <span class="text-black-50"> 
@@ -151,20 +180,22 @@ input:checked + .slider:before {
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="text-right">Profile Settings</h4>
                     </div>
+                    <form method = "POST">
                     <div class="row mt-2">
-                        <div class="col-md-6"><label class="labels">First Name</label><input type="text" class="form-control" placeholder="first name" value=""></div>
-                        <div class="col-md-6"><label class="labels">Last Name</label><input type="text" class="form-control" value="" placeholder="last name"></div>
+                        <div class="col-md-6"><label class="labels">First Name</label><input type="text" class="form-control" placeholder="first name" value="" name = "first_name"></div>
+                        <div class="col-md-6"><label class="labels">Last Name</label><input type="text" class="form-control" value="" placeholder="last name" name = "last_name"></div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-md-12"><label class="labels">Email</label><input type="email" class="form-control" placeholder="enter email" value=""></div>
-                        <div class="col-md-12"><label class="labels">Prefered City</label><input type="text" class="form-control" placeholder="city" value=""></div>
-                        <div class="col-md-12"><label class="labels">Username</label><input type="text" class="form-control" placeholder="username" value=""></div>
+                        <div class="col-md-12"><label class="labels">Email</label><input type="email" class="form-control" placeholder="enter email" value="" name = "email"></div>
+                        <div class="col-md-12"><label class="labels">Prefered City</label><input type="text" class="form-control" placeholder="city" value="" name ="city" ></div>
+                      <!--<div class="col-md-12"><label class="labels">Username</label><input type="text" class="form-control" placeholder="username" value="" name = "username"></div> -->
 
                     </div>
                     <div class="row mt-3">
                         <span class="text-black-100" style="font-size:18px; ">Notifications:
                             <label class="switch">
-                                <input type="checkbox">
+                                <input type="checkbox" id="myCheck" name="check" {% if notifications %} checked {% endif %}>
+                                <!-- <input type="hidden" name="noti" value="0"> -->
                                 <span class="slider round"></span>
                               </label>
                         </span>
@@ -173,9 +204,11 @@ input:checked + .slider:before {
                         <div class="col-md-6"><label class="labels">Country</label><input type="text" class="form-control" placeholder="country" value=""></div>
                         <div class="col-md-6"><label class="labels">State/Region</label><input type="text" class="form-control" value="" placeholder="state"></div>
                     </div> -->
-                    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="button">Save Profile</button></div>
+                    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Save Profile</button></div>
+                    </form>
                 </div>
             </div>
+
             
           <!-- <div class="col-md-4">
                 <div class="p-3 py-5">
@@ -188,6 +221,8 @@ input:checked + .slider:before {
     </div>
     </div>
     </div>
+
+    
 
 
 
