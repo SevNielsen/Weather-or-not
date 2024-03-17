@@ -109,3 +109,7 @@ def profile():
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 #   return render_template("profile.html")
 
+@auth.route('/testing')
+def testing():
+    username1 = current_user.username
+    return render_template("testing.html", logged_in = current_user, username = username1)
