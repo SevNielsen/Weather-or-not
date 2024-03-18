@@ -279,7 +279,17 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
                                 <h5 class="card-title text-center" style="font-family: Lucida Handwriting"><strong>5 Day Forecast</strong></h5>
                                 <div class="row d-flex justify-content-around p-1">
                                     <div class="col-md-2 col-sm-4 mb-3">
-                                        <div class="custom-card2"></div>
+                                        <div class="custom-card2">
+                                            <div class="d-flex">
+                                                <div class="flex-grow-1">
+                                                    <p>
+                                                        <span>{{listof[0][3]}}</span><br />
+                                                        <span> </span>
+                                                        
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col-md-2 col-sm-4 mb-3"> 
                                         <div class="custom-card2"></div>
@@ -304,7 +314,19 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 
 
 
-
+<!--
+     <div class="d-flex">
+               <div class="flex-grow-1">
+                <p>
+                 <span id="description-temp">Mostly Sunny</span><br />
+                 Feels like
+                 <span class="temps" id="feels-like"></span>°<span
+                  class="fahrenheit"
+                  >F</span><br />
+                 <small id="condition-msg"></small>
+                </p>
+               </div>
+-->
 
 
 
