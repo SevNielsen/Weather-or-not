@@ -128,17 +128,19 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 <div class="container">
     <div class="row justify-content-end">
       <div class="col-lg-4 mt-3">
-        <div class="input-group rounded">
-          <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" />
-          <!-- Replace the search icon with an image -->
-          <span class="input-group-text border-0" id="search-addon">
-            <input id="search_btn_airport" title="Search" alt="Search" src="//s1.twnmm.com/images/en_ca/magnifying-glass.png" type="image">
-          </span>
+        <form method = "POST" class="input-group search-form">
+        <div class="input-group rounded" >
+          <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" name = "city" />
+          <button type="submit"class="btn btn-outline-primary me-2 search-btn">
+            <i class="fa-solid fa-magnifying-glass-location"></i>
+           </button>
         </div>
+        </form>
       </div>
     </div>
   </div>
 
+  
   
 
 <!--<div class="container">
@@ -382,47 +384,7 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 
 
 
-<!-- 
-<div class="divTable">
-    <div class="divTableBody">
-    <div class="divTableRow">
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    </div>
-    <div class="divTableRow">
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    </div>
-    <div class="divTableRow">
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    </div>
-    <div class="divTableRow">
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    </div>
-    <div class="divTableRow">
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    <div class="divTableCell">&nbsp;</div>
-    </div>
-    </div>
-    </div>
--->
+
 
 
 

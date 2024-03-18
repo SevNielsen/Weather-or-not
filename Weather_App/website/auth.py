@@ -77,9 +77,13 @@ def dashboard():
     return calendar.day_name[
         datetime.date(day=day, month=month, year=year).weekday()
     ]
+    if request.method == 'POST':
+        ci = request.form.get('city')
+    else:
+        ci = current_user.city
     load_dotenv()
     apikey = os.getenv('API_KEY')
-    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(current_user.city, apikey)
+    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(ci, apikey)
     req = requests.get(url).json()
     lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
 
@@ -99,12 +103,12 @@ def dashboard():
             temp = i.get('dt_txt').split()[0]
             year, month, day = temp.split("-")
             temp = weekday_from_date(int(day), int(month), int(year))
-            if i.get('dt_txt').split()[0] == listof1[ha][3]:
+            if temp == listof1[ha][3]:
                 listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
                 listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
             else:
                 ha = ha + 1
-                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), i.get('dt_txt').split()[0], i.get('weather')[0].get('icon')])
+                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, i.get('weather')[0].get('icon')])
     #for date in listof:
         #year, month, day = date[3].split("-")
         #date[3] = weekday_from_date(int(day), int(month), int(year))
