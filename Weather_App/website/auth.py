@@ -3,6 +3,11 @@ from .models import Member
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db 
 from flask_login import login_user, login_required, logout_user, current_user
+from datetime import datetime, timezone
+from dotenv import load_dotenv
+import os
+import requests
+
 
 auth = Blueprint('auth', __name__)
 
@@ -64,21 +69,38 @@ def sign_up():
 
     return render_template("signup.html", logged_in = current_user)
 
-@auth.route('/dashboard')
+@auth.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
-    username1 = current_user.username
-    return render_template("dashboard.html", logged_in = current_user, username = username1)
+    '''
+    load_dotenv()
+    apikey = os.getenv('API_KEY')
+    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(current_user.city, apikey)
+    req = requests.get(url).json()
+    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+
+    url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
+
+    req2 = requests.get(url2).json()
+    listof1 = []
+    ha = -1
+    for i in req2['list']:
+        if ha == -1:
+            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), i.get('dt_txt').split()[0], i.get('weather')[0].get('icon')])
+            ha = ha + 1
+        else:
+            if i.get('dt_txt').split()[0] == listof1[ha][3]:
+                listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
+                listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
+            else:
+                ha = ha + 1
+                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), i.get('dt_txt').split()[0], i.get('weather')[0].get('icon')])
+'''
+    return render_template("dashboard.html", logged_in=current_user, username=current_user.username)#,listof = listof1)
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
     if request.method == 'POST':
-       # firstName = request.form.get('first_Name')
-       # lastName = request.form.get('last_Name')
-       # email = request.form.get('email')
-       # username = request.form.get('username')
-        #city = request.form.get('city')
-        #noti = bool(int(request.form.get('noti')))
         if request.form.get('first_name'):
             current_user.first_name = request.form.get('first_name')
         if request.form.get('last_name'):
@@ -109,7 +131,7 @@ def profile():
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 #   return render_template("profile.html")
 
-@auth.route('/testing')
+@auth.route('/bs')
 def testing():
     username1 = current_user.username
-    return render_template("testing.html", logged_in = current_user, username = username1)
+    return render_template("bs.html", logged_in = current_user, username = username1)
