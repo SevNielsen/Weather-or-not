@@ -143,110 +143,7 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
   
   
 
-<!--<div class="container">
 
-    <div class="row d-flex">
-        <div class="local-overview col ms-lg-4 mt-4">
-         <div class="mx-3 my-4">
-          <h2>Forecast in <span id="location"></span></h2>
-          <h3 id="today"></h3>
-         </div>
-         <div class="container flex-md-row flex-column">
-          <div class="row">
-           <section class="temp-overview col-lg-5">
-            <div class="current-weather card">
-             <div class="card-body">
-              <div class="d-flex">
-               <h1 class="flex-grow-1">
-                <span id="temp-now"></span>°<span class="fahrenheit">F</span>
-                <span class="toggle-temps">/ <a href="#" class="celsius">C</a></span>
-               </h1>
-               <h3 class="text-end pt-2"><small>High</small><span class="temps" id="high-temp"></span>°<span class="fahrenheit">F</span><br />
-                <small>Low </small>
-                <span class="temps" id="low-temp">30</span>°<span class="fahrenheit">F</span>
-               </h3>
-              </div>
-              <br /><br />
-              <div class="d-flex">
-               <div class="flex-grow-1">
-                <p>
-                 <span id="description-temp">Mostly Sunny</span><br />
-                 Feels like
-                 <span class="temps" id="feels-like"></span>°<span
-                  class="fahrenheit"
-                  >F</span><br />
-                 <small id="condition-msg"></small>
-                </p>
-               </div>
-               <div>
-                <img
-                 src=""
-                 width="85px"
-                 class="weather-icon default-main-icon"/>
-               </div>
-              </div>
-             </div>
-            </div>
-           </section>
-           <div class="w-100 d-lg-none d-block"></div>
-           <section class="temp-details col-lg-4 col-md-5 mt-3 mt-md-2 mt-lg-0">
-            <div class="card p-1 initial">
-             <ul class="list-group list-group-flush">
-              <li class="list-group-item d-flex">
-               <strong class="flex-grow-1">Visibility </strong>
-               <span id="visibility">0</span>km
-               <i class="fa-solid fa-eye-slash align-self-center"></i>
-              </li>
-              <li class="list-group-item d-flex">
-               <strong class="flex-grow-1">Dew Point </strong><span id="dew-point" class="temps"></span>°<span
-                class="fahrenheit">F</span>
-               <i class="fa-solid fa-droplet align-self-center"></i>
-              </li>
-              <li class="list-group-item d-flex">
-               <strong class="flex-grow-1">Wind </strong>
-               <span id="wind">0</span>
-               <span id="wind-unit">mph</span>
-               <i class="fa-solid fa-wind align-self-center"></i>
-              </li>
-    
-              <li class="list-group-item d-flex">
-               <strong class="flex-grow-1"> Humidity</strong>
-               <span id="humidity">0</span>%
-               <i class="fa-solid fa-water align-self-center"></i>
-              </li>
-    
-              <li class="list-group-item d-flex">
-               <strong class="flex-grow-1">Cloudiness </strong>
-               <span id="clouds"></span>%
-               <i class="fa-solid fa-cloud align-self-center"></i>
-              </li>
-             </ul>
-            </div>
-           </section>
-           <div class="w-100 d-md-none d-block"></div>
-           <section class="sun-time col-md mt-3 mt-md-2 mt-lg-0">
-            <div class="card">
-             <img
-              src="./assets/day-landscape.png"
-              class="card-img w-100"
-              id="scenery"
-             />
-             <div class="card-img-overlay text-center">
-              <i class="fa-solid fa-sun"></i>
-              <h3 lass="fw-light">Sunrise</h3>
-              <h2 id="sunrise-time"></h2>
-              <br />
-              <i class="fa-solid fa-moon"></i>
-              <h3 lass="fw-lighter">Sunset</h3>
-              <h2 id="sunset-time"></h2>
-             </div>
-            </div>
-           </section>
-          </div>
-         </div>
-         </div>
-    </div>
-</div> -->
 
 <div class="container">
     <div class="row d-flex">
@@ -278,16 +175,18 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
                     <div class="row">
                         <div class="card custom-card7 mb-3">
                             <div class="card-body">
-                                <h5 class="card-title text-center" style="font-family: Lucida Handwriting"><strong>5 Day Forecast</strong></h5>
+                                <h5 class="card-title text-center" style="font-family: Lucida Handwriting"><strong>5 Day Forecast {{cit2}}</strong></h5>
                                 <div class="row d-flex justify-content-around p-1">
                                     <div class="col-md-2 col-sm-4 mb-3">
                                         <div class="custom-card2">
                                             <div class="d-flex">
-                                                <div class="flex-grow-1">
+                                                <div class="flex-grow-1 mt-2">
                                                     <p>
                                                         <span>{{listof[0][3]}}</span><br />
-                                                        <span> </span>
-                                                        
+                                                        <span> <img src = "{{listof[0][4]}}" alt = "Icon" > </span> <br />
+                                                        <span> {{listof[0][0]}}°</span> <br />
+                                                        <span> {{listof[0][1]}}°</span> <br />
+                                                        <span> {{listof[0][2]}}</span>
                                                     </p>
                                                 </div>
                                             </div>

@@ -72,11 +72,9 @@ def sign_up():
 
 @auth.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
-    '''
+    
     def weekday_from_date(day, month, year):
-    return calendar.day_name[
-        datetime.date(day=day, month=month, year=year).weekday()
-    ]
+        return calendar.day_name[datetime.date(day=day, month=month, year=year).weekday()]
     if request.method == 'POST':
         ci = request.form.get('city')
     else:
@@ -97,7 +95,7 @@ def dashboard():
             temp = i.get('dt_txt').split()[0]
             year, month, day = temp.split("-")
             temp = weekday_from_date(int(day), int(month), int(year))
-            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, i.get('weather')[0].get('icon')])
+            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
             ha = ha + 1
         else:
             temp = i.get('dt_txt').split()[0]
@@ -106,15 +104,18 @@ def dashboard():
             if temp == listof1[ha][3]:
                 listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
                 listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
+                if listof1[ha][0] < i.get('main').get('temp_max'):
+                    listof1[ha][4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))
+                    listof1[ha][2] = i.get('weather')[0].get('description')
             else:
                 ha = ha + 1
-                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, i.get('weather')[0].get('icon')])
+                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
     #for date in listof:
         #year, month, day = date[3].split("-")
         #date[3] = weekday_from_date(int(day), int(month), int(year))
         #date[4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(date[4])
-'''
-    return render_template("dashboard.html", logged_in=current_user, username=current_user.username)#,listof = listof1)
+
+    return render_template("dashboard.html", logged_in=current_user, username=current_user.username, listof = listof1, cit2 = ci)
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
