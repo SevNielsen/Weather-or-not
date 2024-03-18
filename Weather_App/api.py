@@ -3,13 +3,29 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
 from collections import defaultdict
+import datetime
+import calendar
+
+def weekday_from_date(day, month, year):
+    return calendar.day_name[
+        datetime.date(day=day, month=month, year=year).weekday()
+    ]
+
+date_str = "2024-03-18"
+
+# Split the string by "-"
+year, month, day = date_str.split("-")
+
+year = int(year)
+month = int(month)
+day = int(day)
+x = weekday_from_date(day, month, year)
+print(x)
 
 
 
 
-
-
-
+'''
 load_dotenv()
 apikey = os.getenv('API_KEY')
 city = 'Kelowna'
@@ -79,7 +95,7 @@ print(listof)
 #print(data4)
 
 
-
+'''
 
 
 

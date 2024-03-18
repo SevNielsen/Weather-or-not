@@ -3,10 +3,12 @@ from .models import Member
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db 
 from flask_login import login_user, login_required, logout_user, current_user
-from datetime import datetime, timezone
+#from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
 import requests
+import datetime
+import calendar
 
 
 auth = Blueprint('auth', __name__)
@@ -72,6 +74,11 @@ def sign_up():
 @auth.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
     '''
+    def weekday_from_date(day, month, year):
+    return calendar.day_name[
+        datetime.date(day=day, month=month, year=year).weekday()
+    ]
+
     load_dotenv()
     apikey = os.getenv('API_KEY')
     url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(current_user.city, apikey)
@@ -94,6 +101,13 @@ def dashboard():
             else:
                 ha = ha + 1
                 listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), i.get('dt_txt').split()[0], i.get('weather')[0].get('icon')])
+   
+    for date in listof:
+        year, month, day = date[3].split("-")
+        date[3] = weekday_from_date(int(day), int(month), int(year))
+
+
+    
 '''
     return render_template("dashboard.html", logged_in=current_user, username=current_user.username)#,listof = listof1)
 
