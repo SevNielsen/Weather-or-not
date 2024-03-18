@@ -72,6 +72,9 @@ def sign_up():
 
 @auth.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
+    if current_user.city is None:
+        flash('Please provide a preferred city',category='provide_city')
+        return redirect(url_for('profile.dashboard'))
     
     def weekday_from_date(day, month, year):
         return calendar.day_name[datetime.date(day=day, month=month, year=year).weekday()]
@@ -139,17 +142,7 @@ def profile():
             current_user.notifications = False
         flash('Successfully Made Changes to Your Profile',category='changed')
         db.session.commit()
-        
-
-
-  #  username1 = current_user.username
-   # firstName1 = current_user.first_name
-   # lastName1 = current_user.last_name
-   # email1 = current_user.email
-   # notification1 = current_user.notifications
-  #  city1 = current_user.city
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
-#   return render_template("profile.html")
 
 @auth.route('/bs')
 def testing():
