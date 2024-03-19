@@ -55,7 +55,12 @@
             <a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a>
             {% endif %}
         </div>
-      
+        {% if logged_in.is_authenticated %}
+        <div class="navbar-nav">
+          <span class="navbar-text">Logged in as {{username}}</span>
+        </div>
+        {% endif %}
+    </div>
 </nav>
       
 
