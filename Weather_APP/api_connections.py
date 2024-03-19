@@ -1,17 +1,30 @@
 import requests
-from datetime import datetime, timezone
-
-#for 5 day 3 hour forecast
+from datetime import datetime
+from dataclasses import dataclass
 from collections import defaultdict
 import statistics
+
+# Uncomment the following lines if you want to use environment variables for your API key
+# from dotenv import load_dotenv
+# import os
+#load_dotenv()
+#api_key = os.getenv('API_KEY')
+
+api_key = '87940aef71b9031ac2d5c12deb0c1be3'
+
+@dataclass
+class WeatherData:
+    main: str
+    description: str
+    icon: str
+    temperature: float
 
 def degrees_to_compass(degrees):
     directions = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"]
     index = int((degrees + 22.5) // 45) % 8
     return directions[index]
 
-# Convert city name to latitude and longitude coordinates
-def get_coordinates(city_name, api_key):
+def get_lat_lon(city_name, api_key):
     base_url = "http://api.openweathermap.org/geo/1.0/direct"
     complete_url = f"{base_url}?q={city_name}&limit=1&appid={api_key}"
     try:
@@ -28,15 +41,39 @@ def get_coordinates(city_name, api_key):
         print(f"Error fetching coordinates: {e}")
         return None, None
 
-# Fetch current weather data using latitude and longitude coordinates
-def get_weather_data(lat, lon, api_key):
+def get_current_weather(lat, lon, api_key):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
     complete_url = f"{base_url}?lat={lat}&lon={lon}&appid={api_key}&units=metric"
-    response = requests.get(complete_url)
-    return response.json()
+    try:
+        response = requests.get(complete_url)
+        response.raise_for_status()
+        resp = response.json()
+        data = WeatherData(
+            main=resp['weather'][0]['main'],
+            description=resp['weather'][0]['description'],
+            icon=resp['weather'][0]['icon'],
+            temperature=resp['main']['temp']
+        )
+        return data
+    except requests.RequestException as e:
+        print(f"Error fetching weather data: {e}")
+        return None
+
+if __name__ == "__main__":
+    city_name = input("Enter city name: ")
+    lat, lon = get_lat_lon(city_name, api_key)
+    if lat and lon:
+        weather_data = get_current_weather(lat, lon, api_key)
+        if weather_data:
+            print(f"Weather in {city_name}: {weather_data.main}, {weather_data.description} with a temperature of {weather_data.temperature}°C.")
+        else:
+            print("Weather data not found.")
+    else:
+        print("City coordinates not found.")
+
 
 # Display weather data in a structured format
-def display_weather_dashboard(weather_data):
+#def display_weather_dashboard(weather_data):
     if weather_data:
         print(f"Weather Dashboard for {weather_data.get('name')} ({weather_data['coord']['lat']}, {weather_data['coord']['lon']})\n")
         print(f"Current Conditions: {weather_data['weather'][0]['main']} - {weather_data['weather'][0]['description']}")
@@ -55,12 +92,13 @@ def display_weather_dashboard(weather_data):
     else:
         print("Failed to retrieve weather data.")
 
+
 # Fetch 5 day 3 hour forecast data 
 def get_forecast_data(lat, lon, api_key):
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
     complete_url = f"{base_url}?lat={lat}&lon={lon}&appid={api_key}&units=metric"
-    response = requests.get(complete_url)
-    return response.json()
+    response = requests.get(complete_url).json()
+    
 
 # Display 5 day forecast data
 def display_detailed_forecast_dashboard(forecast_data):
@@ -104,24 +142,3 @@ def display_detailed_forecast_dashboard(forecast_data):
         
         else:
             print("Failed to retrieve forecast data.")
-
-# Main function to run the application
-def main():
-    api_key = "87940aef71b9031ac2d5c12deb0c1be3"
-    city_name = input("Enter city name: ")
-    lat, lon = get_coordinates(city_name, api_key)
-    
-    if lat is not None and lon is not None:
-        # Display current weather
-        weather_data = get_weather_data(lat, lon, api_key)
-        display_weather_dashboard(weather_data)
-        
-        # Display 5-day forecast
-        forecast_data = get_forecast_data(lat, lon, api_key)
-        display_detailed_forecast_dashboard(forecast_data)
-    else:
-        print("Could not get the coordinates for the specified city.")
-
-
-if __name__ == "__main__":
-    main()
