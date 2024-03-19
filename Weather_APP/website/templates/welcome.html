@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .link {
+            margin: 0 10px; /* Adjust spacing between links */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="color: rgb(80, 139, 206);"><i aria-hidden="true" class="fa fa-whatsapp"></i> Welcome to Weather or Not's Website! </h2>
+        <h3 style="font-size: 14px; line-height: 22px;">Click on one of the links below to login or signup</h3>
+        <div class="links">
+            <a href="/login" class="open-btn link" id="addClass"><i class="fa fa-whatsapp" aria-hidden="true"></i> Login</a>
+            <a href="/signup" class="other-link link">Signup</a>
+          
+        </div>
+    </div>
+</body>
+</html>
