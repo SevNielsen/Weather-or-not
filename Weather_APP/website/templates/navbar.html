@@ -16,7 +16,6 @@
     />
     
 
-<<<<<<< HEAD:Weather_APP/website/templates/navbar.html
     <link
     rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -28,8 +27,7 @@
 
  
 
-=======
->>>>>>> 54a9d346bb51eb23462cc14e254fd8a106d8895b:Weather_App/website/templates/navbar.html
+
     <title>{% block title %}Home{% endblock %}</title>
 
     
@@ -44,7 +42,6 @@
         data-target="#navbar"
       >
         <span class="navbar-toggler-icon"></span>
-<<<<<<< HEAD:Weather_APP/website/templates/navbar.html
     </button>
     <div class="collapse navbar-collapse" id="navbar">
         <div class="navbar-nav mr-auto">
@@ -58,33 +55,9 @@
             <a class="nav-item nav-link" id="signUp" href="/signup">Sign Up</a>
             {% endif %}
         </div>
-        <!-- Add the message "happy" here -->
-        {% if logged_in.is_authenticated %}
-=======
-      </button>
-      <div class="collapse navbar-collapse" id="navbar">
->>>>>>> 54a9d346bb51eb23462cc14e254fd8a106d8895b:Weather_App/website/templates/navbar.html
-        <div class="navbar-nav">
-          <a class="nav-item nav-link" id="home" href="/">Home</a>
-          <a class="nav-item nav-link" id="logout" href="/logout">Logout</a>
-          <a class="nav-item nav-link" id="login" href="/login">Login</a>
-          <a class="nav-item nav-link" id="signUp" href="/sign-up">Sign Up</a>
-          
-        </div>
-<<<<<<< HEAD:Weather_APP/website/templates/navbar.html
-        {% endif %}
-    </div>
+      
 </nav>
-=======
-        <div class="input-group rounded">
-            <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-            <span class="input-group-text border-0" id="search-addon">
-              <i class="fas fa-search"></i>
-            </span>
-          </div>
-      </div>
-    </nav>
->>>>>>> 54a9d346bb51eb23462cc14e254fd8a106d8895b:Weather_App/website/templates/navbar.html
+      
 
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %} {% if category ==
