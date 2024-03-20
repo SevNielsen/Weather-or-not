@@ -8,6 +8,7 @@ import os
 import requests
 from datetime import datetime
 import calendar
+import collections
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
@@ -113,32 +114,38 @@ def dashboard():
             'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
         }
         forecast_data = []
+        daily_forecasts = collections.defaultdict(lambda: {
+            'temp_max': float('-inf'),
+            'temp_min': float('inf'),
+            'icons': [],
+            'descriptions': [],
+            'day': '',
+            'date': ''
+        })
+        # Process and aggregate data
         for entry in forecast_response['list']:
             date_text = entry['dt_txt']
             date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
+            date = date_text[:10]  # Extract just the date part
             weekday = calendar.day_name[date_obj.weekday()]
-            forecast_data.append({
-                'day': weekday,
-                'date': date_text[:10],
-                'temp_max': entry['main']['temp_max'],
-                'temp_min': entry['main']['temp_min'],
-                'icon': f"https://openweathermap.org/img/wn/{entry['weather'][0]['icon']}@2x.png",
-                'description': entry['weather'][0]['description']
-            })
-        # Group forecast data by day for display
-        grouped_forecast = {}
-        for entry in forecast_data:
-            day = entry['date']
-            if day not in grouped_forecast:
-                grouped_forecast[day] = entry
-            else:
-                # Update max/min temperatures if necessary
-                grouped_forecast[day]['temp_max'] = max(grouped_forecast[day]['temp_max'], entry['temp_max'])
-                grouped_forecast[day]['temp_min'] = min(grouped_forecast[day]['temp_min'], entry['temp_min'])
-        
-        # Convert grouped forecast data to a list sorted by date
-        sorted_forecast = [value for key, value in sorted(grouped_forecast.items())]
-        print(forecast_data)
+            
+            # Aggregate data
+            daily_forecasts[date]['temp_max'] = max(daily_forecasts[date]['temp_max'], entry['main']['temp_max'])
+            daily_forecasts[date]['temp_min'] = min(daily_forecasts[date]['temp_min'], entry['main']['temp_min'])
+            if entry['weather'][0]['icon'] not in daily_forecasts[date]['icons']:
+                daily_forecasts[date]['icons'].append(entry['weather'][0]['icon'])
+            if entry['weather'][0]['description'] not in daily_forecasts[date]['descriptions']:
+                daily_forecasts[date]['descriptions'].append(entry['weather'][0]['description'])
+            daily_forecasts[date]['day'] = weekday
+            daily_forecasts[date]['date'] = date
+
+        # Convert aggregated data into a sorted list by date
+        sorted_forecast = [value for key, value in sorted(daily_forecasts.items(), key=lambda x: x[0])][:5]
+
+        # Prepare the forecast data for each day
+        for day_forecast in sorted_forecast:
+            day_forecast['icon'] = day_forecast['icons'][0]  # Example: use the first icon, or choose based on logic
+            day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
         return render_template(
             "dashboard.html",
             logged_in=current_user.is_authenticated,
