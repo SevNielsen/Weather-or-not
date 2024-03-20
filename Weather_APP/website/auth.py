@@ -75,13 +75,17 @@ def sign_up():
 @auth.route('/dashboard', methods = ['GET','POST'])
 @login_required
 def dashboard():   
+    # Default city
+    default_city = 'Vancouver'
+    if request.method == 'POST':
+        # Extract city from form data
+        city = request.form.get('city')
+    else:
+        # Use the user's default city or a predefined default
+        city = current_user.city if current_user.city else default_city
     # Load API key from .env file
     load_dotenv()
     api_key = os.getenv('API_KEY')
-    # Default city to use if the user has not set one
-    
-    default_city = 'Vancouver'
-    city = current_user.city if current_user.city else default_city
     # Fetching current weather data 
     weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
     forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
