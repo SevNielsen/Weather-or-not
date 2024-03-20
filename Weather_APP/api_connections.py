@@ -3,21 +3,7 @@ from datetime import datetime
 from dataclasses import dataclass
 from collections import defaultdict
 import statistics
-
-# Uncomment the following lines if you want to use environment variables for your API key
-# from dotenv import load_dotenv
-# import os
-#load_dotenv()
-#api_key = os.getenv('API_KEY')
-
-api_key = '87940aef71b9031ac2d5c12deb0c1be3'
-
-@dataclass
-class WeatherData:
-    main: str
-    description: str
-    icon: str
-    temperature: float
+from flask import flash
 
 def degrees_to_compass(degrees):
     directions = ["North", "North-East", "East", "South-East", "South", "South-West", "West", "North-West"]
@@ -41,6 +27,7 @@ def get_lat_lon(city_name, api_key):
         print(f"Error fetching coordinates: {e}")
         return None, None
 
+'''
 def get_current_weather(lat, lon, api_key):
     base_url = "http://api.openweathermap.org/data/2.5/weather"
     complete_url = f"{base_url}?lat={lat}&lon={lon}&appid={api_key}&units=metric"
@@ -70,8 +57,9 @@ if __name__ == "__main__":
             print("Weather data not found.")
     else:
         print("City coordinates not found.")
+'''
 
-
+'''
 # Display weather data in a structured format
 #def display_weather_dashboard(weather_data):
     if weather_data:
@@ -92,14 +80,12 @@ if __name__ == "__main__":
     else:
         print("Failed to retrieve weather data.")
 
-
 # Fetch 5 day 3 hour forecast data 
 def get_forecast_data(lat, lon, api_key):
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
     complete_url = f"{base_url}?lat={lat}&lon={lon}&appid={api_key}&units=metric"
     response = requests.get(complete_url).json()
-    
-
+ 
 # Display 5 day forecast data
 def display_detailed_forecast_dashboard(forecast_data):
     if forecast_data:
@@ -142,3 +128,102 @@ def display_detailed_forecast_dashboard(forecast_data):
         
         else:
             print("Failed to retrieve forecast data.")
+
+'''
+
+def call_current_weather_API(lat, lon, apikey):
+    # Fetching current weather data 
+    current_weather_url = f"http://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={apikey}&units=metric"
+    try:
+        current_weather_response = requests.get(current_weather_url).json()
+        # Ensure the API request was successful
+        if current_weather_response.get('cod') != 200:
+            return None, 'Could not retrieve weather data. Please try again.'
+
+        # Parse data into dictionary format
+        current_weather_data = {
+            'icon': f"https://openweathermap.org/img/wn/{current_weather_response['weather'][0]['icon']}@2x.png",
+            'temperature': current_weather_response['main']['temp'],
+            'feels_like': current_weather_response['main']['feels_like'],
+            'temp_min': current_weather_response['main']['temp_min'],
+            'temp_max': current_weather_response['main']['temp_max'],
+            'humidity': current_weather_response['main']['humidity'],
+            'city': current_weather_response['name'],
+            'sunrise': datetime.datetime.fromtimestamp(current_weather_response['sys']['sunrise']).strftime('%Y-%m-%d %H:%M:%S'),
+            'sunset': datetime.datetime.fromtimestamp(current_weather_response['sys']['sunset']).strftime('%Y-%m-%d %H:%M:%S'),
+        }
+        return current_weather_data, None
+    except requests.RequestException as e:
+        return None, f'An error occurred: {e}'
+    
+def dashboard():
+    # Load API key from .env file
+    #load_dotenv()
+    api_key = 'a077f033d014870da9c49ee6f07c59b8'
+    # Default city to use if the user has not set one
+    city = 'Vancouver'
+
+    # Fetching current weather data 
+    weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
+
+        # Make requests to OpenWeatherMap API
+    try:
+        weather_response = requests.get(weather_url).json()
+        forecast_response = requests.get(forecast_url).json()
+
+        if weather_response.get('cod') != '200':
+            flash(f"Error fetching current weather: {weather_response.get('message', 'Unknown error')}", category='error')
+        
+        if forecast_response.get('cod') != '200':
+            flash(f"Error fetching forecast: {forecast_response.get('message', 'Unknown error')}", category='error')
+
+        current_weather = {
+            'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
+            'temperature': weather_response['main']['temp'],
+            'feels_like': weather_response['main']['feels_like'],
+            'temp_min': weather_response['main']['temp_min'],
+            'temp_max': weather_response['main']['temp_max'],
+            'humidity': weather_response['main']['humidity'],
+            'city': weather_response['name'],
+            'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
+            'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
+        }
+        forecast_data = []
+        for entry in forecast_response['list']:
+            date_text = entry['dt_txt']
+            date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
+            weekday = calendar.day_name[date_obj.weekday()]
+            forecast_data.append({
+                'day': weekday,
+                'date': date_text[:10],
+                'temp_max': entry['main']['temp_max'],
+                'temp_min': entry['main']['temp_min'],
+                'icon': f"https://openweathermap.org/img/wn/{entry['weather'][0]['icon']}@2x.png",
+                'description': entry['weather'][0]['description']
+            })
+        # Group forecast data by day for display
+        grouped_forecast = {}
+        for entry in forecast_data:
+            day = entry['date']
+            if day not in grouped_forecast:
+                grouped_forecast[day] = entry
+            else:
+                # Update max/min temperatures if necessary
+                grouped_forecast[day]['temp_max'] = max(grouped_forecast[day]['temp_max'], entry['temp_max'])
+                grouped_forecast[day]['temp_min'] = min(grouped_forecast[day]['temp_min'], entry['temp_min'])
+        
+        # Convert grouped forecast data to a list sorted by date
+        sorted_forecast = [value for key, value in sorted(grouped_forecast.items())]
+    
+        return render_template(
+            "dashboard.html",
+            logged_in=current_user.is_authenticated,
+            current_weather=current_weather,
+            forecast=sorted_forecast
+        )
+    except requests.RequestException:
+        flash("Failed to connect to weather service", category='error') 
+    
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated)
+    

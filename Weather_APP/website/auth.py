@@ -3,122 +3,149 @@ from .models import Member
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db 
 from flask_login import login_user, login_required, logout_user, current_user
-#from datetime import datetime, timezone
 from dotenv import load_dotenv
 import os
 import requests
-import datetime
+from datetime import datetime
 import calendar
-
+# Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods = ['GET','POST'])
 def login():
+    # Handle POST request to process login form submission
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password2')  ## Sam Jeon mr.perfecto183@gmail.com sammy ipad
-        member = Member.query.filter_by(username = username).first()
-        if member:
-            if check_password_hash(member.password, password):
-                login_user(member, remember=True)
-                return redirect(url_for('auth.dashboard'))
-                #return redirect(url_for('auth.dashboard'))
-            else:
-                flash("Incorrect Password", category='error')
-                #return redirect(url_for('auth.login'))
-
+        
+        # Query the database for a user with the provided username
+        member = Member.query.filter_by(username=username).first()
+        if member and check_password_hash(member.password, password):
+            # Log the user in and redirect to the dashboard
+            login_user(member, remember=True)
+            return redirect(url_for('auth.dashboard'))
         else:
-            flash("Incorrect username", category='error')
-            #return redirect(url_for('auth.login'))
-
-    return render_template("login.html", logged_in = current_user)
-
+            # Flash error message if login details are incorrect
+            flash("Incorrect username or password", category='error')
+    
+    # Render login page for GET requests or after unsuccessful login attempt
+    return render_template("login.html", logged_in=current_user.is_authenticated)
 
 @auth.route('/logout')
 @login_required
 def logout():
+    # Log the current user out and redirect to login page
     logout_user()
     return redirect(url_for('auth.login'))
 
 @auth.route('/signup', methods = ['GET','POST'])
 def sign_up():
+    # Handle POST request to process signup form submission
     if request.method == 'POST':
+        # Collect from data
         firstName = request.form.get('First_Name')
         lastName = request.form.get('Last_Name')
         email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
-        member = Member.query.filter_by(username = username).first()
+       # Check if a user with the provided username already exists
+        member = Member.query.filter_by(username=username).first()
         if member:
-            flash("member already exists", category='error')
-            #return redirect(url_for('auth.sign_up'))
-
-    
-        elif firstName is None or lastName is None or email is None or password is None or username is None:
-            flash("Please revise your information and try again", category="error")
-        elif len(firstName) < 2 or len(lastName) < 2 or len(email) < 10 or len(password) < 2 or len(username) < 2:
-            flash("Please provide enough characters and try again", category="error")
+            flash("Username already exists", category='error')
+        elif not all([firstName, lastName, email, password, username]):
+            flash("All fields are required", category='error')
         else:
-            member = Member(username = username, first_name = firstName, last_name = lastName, email = email, password=generate_password_hash(password, method='pbkdf2:sha256'))
-            db.session.add(member)
+            # Create new member and add to the database
+            new_member = Member(
+                username=username, 
+                first_name=firstName, 
+                last_name=lastName, 
+                email=email, 
+                password=generate_password_hash(password, method='pbkdf2:sha256')
+            )
+            db.session.add(new_member)
             db.session.commit()
-            login_user(member, remember=True)
+            # Log the user in and redirect to the profile page
+            login_user(new_member, remember=True)
             flash("Account created successfully", category="success")
-            #return redirect(url_for('auth.profile'), logged_in =current_user)
             return redirect(url_for('auth.profile'))
-
-
+    # Render signup page for GET requests or after unsuccessful signup attempt
     return render_template("signup.html", logged_in = current_user)
 
 @auth.route('/dashboard', methods = ['GET','POST'])
-def dashboard():
-    if current_user.city is None:
-        flash('Please provide a preferred city',category='provide_city')
-        return redirect(url_for('profile.dashboard'))
-    
-    def weekday_from_date(day, month, year):
-        return calendar.day_name[datetime.date(day=day, month=month, year=year).weekday()]
-    if request.method == 'POST':
-        ci = request.form.get('city')
-    else:
-        ci = current_user.city
+@login_required
+def dashboard():   
+    # Load API key from .env file
     load_dotenv()
-    apikey = os.getenv('API_KEY')
-    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(ci, apikey)
-    req = requests.get(url).json()
-    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+    api_key = os.getenv('API_KEY')
+    # Default city to use if the user has not set one
+    
+    default_city = 'Vancouver'
+    city = current_user.city if current_user.city else default_city
+    # Fetching current weather data 
+    weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
 
-    url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
+        # Make requests to OpenWeatherMap API
+    try:
+        weather_response = requests.get(weather_url).json()
+        forecast_response = requests.get(forecast_url).json()
 
-    req2 = requests.get(url2).json()
-    listof1 = []
-    ha = -1
-    for i in req2['list']:
-        if ha == -1:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
-            ha = ha + 1
-        else:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            if temp == listof1[ha][3]:
-                listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
-                listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
-                if listof1[ha][0] < i.get('main').get('temp_max'):
-                    listof1[ha][4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))
-                    listof1[ha][2] = i.get('weather')[0].get('description')
+        if weather_response.get('cod') != '200':
+            flash(f"Error fetching current weather: {weather_response.get('message', 'Unknown error')}", category='error')
+        
+        if forecast_response.get('cod') != '200':
+            flash(f"Error fetching forecast: {forecast_response.get('message', 'Unknown error')}", category='error')
+
+        current_weather = {
+            'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
+            'temperature': weather_response['main']['temp'],
+            'feels_like': weather_response['main']['feels_like'],
+            'temp_min': weather_response['main']['temp_min'],
+            'temp_max': weather_response['main']['temp_max'],
+            'humidity': weather_response['main']['humidity'],
+            'city': weather_response['name'],
+            'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
+            'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
+        }
+        forecast_data = []
+        for entry in forecast_response['list']:
+            date_text = entry['dt_txt']
+            date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
+            weekday = calendar.day_name[date_obj.weekday()]
+            forecast_data.append({
+                'day': weekday,
+                'date': date_text[:10],
+                'temp_max': entry['main']['temp_max'],
+                'temp_min': entry['main']['temp_min'],
+                'icon': f"https://openweathermap.org/img/wn/{entry['weather'][0]['icon']}@2x.png",
+                'description': entry['weather'][0]['description']
+            })
+        # Group forecast data by day for display
+        grouped_forecast = {}
+        for entry in forecast_data:
+            day = entry['date']
+            if day not in grouped_forecast:
+                grouped_forecast[day] = entry
             else:
-                ha = ha + 1
-                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
-    #for date in listof:
-        #year, month, day = date[3].split("-")
-        #date[3] = weekday_from_date(int(day), int(month), int(year))
-        #date[4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(date[4])
+                # Update max/min temperatures if necessary
+                grouped_forecast[day]['temp_max'] = max(grouped_forecast[day]['temp_max'], entry['temp_max'])
+                grouped_forecast[day]['temp_min'] = min(grouped_forecast[day]['temp_min'], entry['temp_min'])
+        
+        # Convert grouped forecast data to a list sorted by date
+        sorted_forecast = [value for key, value in sorted(grouped_forecast.items())]
+        print(forecast_data)
+        return render_template(
+            "dashboard.html",
+            logged_in=current_user.is_authenticated,
+            current_weather=current_weather,
+            forecast=sorted_forecast
+        )
+    except requests.RequestException:
+        flash("Failed to connect to weather service", category='error') 
+    
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated)
 
-    return render_template("dashboard.html", logged_in=current_user, username=current_user.username, listof = listof1, cit2 = ci)
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
@@ -134,8 +161,6 @@ def profile():
         #   current_user.username = request.form.get('username')
         if request.form.get('city'):
             current_user.city = request.form.get('city')
-        #if request.form.get('check'):
-        #    current_user.notifications = request.form.get(bool(int(request.form.get('check'))))
         if request.form.get('check'):
             current_user.notifications = True
         else:
@@ -145,6 +170,6 @@ def profile():
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
 @auth.route('/bs')
+@login_required
 def testing():
-    username1 = current_user.username
-    return render_template("bs.html", logged_in = current_user, username = username1)
+    return render_template("bs.html", logged_in=current_user.is_authenticated, username=current_user.username)
