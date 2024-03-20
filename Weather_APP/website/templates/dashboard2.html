@@ -1,0 +1,100 @@
+{% extends "navbar.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<style>
+body { 
+    background: rgb(2,0,36);
+    background: -moz-linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(216,235,245,1) 0%, rgba(216,235,245,1) 100%);
+    background: -webkit-linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(216,235,245,1) 0%, rgba(216,235,245,1) 100%);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(216,235,245,1) 0%, rgba(216,235,245,1) 100%);
+}
+
+.custom-card, .custom-card1, .custom-card7 {
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.8);
+    border: none;
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 0%);
+    border-radius: 20px;
+}
+
+.custom-card2, .custom-card3, .custom-card4, .custom-card5, .custom-card6 {
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(217,220,222,1) 0%, rgba(194,219,242,1) 0%);
+    width: 100px;
+    height: 270px;
+    border-radius: 12px;
+    margin: 0 9px;
+    box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgb(181, 203, 249);
+}
+</style>
+
+<div class="container">
+    <!-- Search form for city -->
+    <div class="row justify-content-end">
+        <div class="col-lg-4 mt-3">
+            <form method="POST" class="input-group search-form">
+                <div class="input-group rounded">
+                    <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" name="city" />
+                    <button type="submit" class="btn btn-outline-primary me-2 search-btn">
+                        <i class="fa-solid fa-magnifying-glass-location"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- Weather cards -->
+    <div class="row d-flex">
+        <div class="local-overview col ms-lg-4 mt-4">
+            <div class="row"> 
+                <!-- Current Weather Card -->
+                <section> 
+                    <div class="col-md-6 col-sm-10 mb-5">
+                        <div class="card custom-card mt-0">
+                            <div class="card-body">
+                                <h5 class="card-title">Current Weather in {{ current_weather.city }}</h5>
+                                <div class="weather-info">
+                                    <img src="{{ current_weather.icon }}" alt="Weather Icon">
+                                    <p class="card-text">Temperature: {{ current_weather.temperature }}°C</p>
+                                    <p class="card-text">Feels Like: {{ current_weather.feels_like }}°C</p>
+                                    <p class="card-text">Min: {{ current_weather.temp_min }}°C, Max: {{ current_weather.temp_max }}°C</p>
+                                    <p class="card-text">Humidity: {{ current_weather.humidity }}%</p>
+                                    <p class="card-text">Sunrise: {{ current_weather.sunrise }}</p>
+                                    <p class="card-text">Sunset: {{ current_weather.sunset }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5 Day Forecast Card -->
+                <div class="row">
+                    <div class="card custom-card7 mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title text-center"><strong>5 Day Forecast</strong></h5>
+                            <div class="row d-flex justify-content-around p-1">
+                                {% for day in forecast %}
+                                <div class="col-md-2 col-sm-4 mb-3">
+                                    <div class="custom-card2">
+                                        <p>
+                                            <strong>{{ day.day }}</strong><br>
+                                            <small>{{ day.date }}</small><br>
+                                            <img src="{{ day.icon }}" alt="Weather icon" style="width:50px;"><br>
+                                            <strong>{{ day.temp_max }}°C</strong> / {{ day.temp_min }}°C<br>
+                                            <small>{{ day.description }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

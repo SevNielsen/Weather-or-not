@@ -180,7 +180,86 @@ def profile():
         db.session.commit()
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
-@auth.route('/bs')
+@auth.route('/dashboard2')
 @login_required
 def testing():
-    return render_template("bs.html", logged_in=current_user.is_authenticated, username=current_user.username)
+    # Default city
+    default_city = 'Vancouver'
+    if request.method == 'POST':
+        # Extract city from form data
+        city = request.form.get('city')
+    else:
+        # Use the user's default city or a predefined default
+        city = current_user.city if current_user.city else default_city
+    # Load API key from .env file
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    # Fetching current weather data 
+    weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
+
+        # Make requests to OpenWeatherMap API
+    try:
+        weather_response = requests.get(weather_url).json()
+        forecast_response = requests.get(forecast_url).json()
+
+        if weather_response.get('cod') != '200':
+            flash(f"Error fetching current weather: {weather_response.get('message', 'Unknown error')}", category='error')
+        
+        if forecast_response.get('cod') != '200':
+            flash(f"Error fetching forecast: {forecast_response.get('message', 'Unknown error')}", category='error')
+
+        current_weather = {
+            'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
+            'temperature': weather_response['main']['temp'],
+            'feels_like': weather_response['main']['feels_like'],
+            'temp_min': weather_response['main']['temp_min'],
+            'temp_max': weather_response['main']['temp_max'],
+            'humidity': weather_response['main']['humidity'],
+            'city': weather_response['name'],
+            'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
+            'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
+        }
+        forecast_data = []
+        daily_forecasts = collections.defaultdict(lambda: {
+            'temp_max': float('-inf'),
+            'temp_min': float('inf'),
+            'icons': [],
+            'descriptions': [],
+            'day': '',
+            'date': ''
+        })
+        # Process and aggregate data
+        for entry in forecast_response['list']:
+            date_text = entry['dt_txt']
+            date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
+            date = date_text[:10]  # Extract just the date part
+            weekday = calendar.day_name[date_obj.weekday()]
+            
+            # Aggregate data
+            daily_forecasts[date]['temp_max'] = max(daily_forecasts[date]['temp_max'], entry['main']['temp_max'])
+            daily_forecasts[date]['temp_min'] = min(daily_forecasts[date]['temp_min'], entry['main']['temp_min'])
+            if entry['weather'][0]['icon'] not in daily_forecasts[date]['icons']:
+                daily_forecasts[date]['icons'].append(entry['weather'][0]['icon'])
+            if entry['weather'][0]['description'] not in daily_forecasts[date]['descriptions']:
+                daily_forecasts[date]['descriptions'].append(entry['weather'][0]['description'])
+            daily_forecasts[date]['day'] = weekday
+            daily_forecasts[date]['date'] = date
+
+        # Convert aggregated data into a sorted list by date
+        sorted_forecast = [value for key, value in sorted(daily_forecasts.items(), key=lambda x: x[0])][:5]
+
+        # Prepare the forecast data for each day
+        for day_forecast in sorted_forecast:
+            day_forecast['icon'] = day_forecast['icons'][0]  # Example: use the first icon, or choose based on logic
+            day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
+        return render_template(
+            "dashboard2.html",
+            logged_in=current_user.is_authenticated,
+            current_weather=current_weather,
+            forecast=sorted_forecast
+        )
+    except requests.RequestException:
+        flash("Failed to connect to weather service", category='error') 
+    
+    return render_template("dashboard2.html", logged_in=current_user.is_authenticated)
