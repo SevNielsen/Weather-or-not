@@ -157,7 +157,6 @@ def dashboard():
     
     return render_template("dashboard.html", logged_in=current_user.is_authenticated)
 
-
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
