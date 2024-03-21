@@ -9,7 +9,7 @@ import requests
 from datetime import datetime
 import calendar
 import collections
-from .weather_utils import weekday_from_date, fetch_weather_data
+from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
@@ -106,6 +106,7 @@ def dashboard():
         'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
         'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
     }
+    
     #Parse data for daily forecast lambda allows stop forecasts at 5 days
     daily_forecasts = collections.defaultdict(lambda: {
         'temp_max': float('-inf'),
@@ -125,7 +126,7 @@ def dashboard():
         daily_forecasts[date]['temp_max'] = max(daily_forecasts[date]['temp_max'], entry['main']['temp_max'])
         daily_forecasts[date]['temp_min'] = min(daily_forecasts[date]['temp_min'], entry['main']['temp_min'])
         if entry['weather'][0]['icon'] not in daily_forecasts[date]['icons']:
-            daily_forecasts[date]['icons'].append(entry['weather'][0]['icon'])
+            daily_forecasts[date]['icons'].append(entry['weather'][0]['icon']) 
         if entry['weather'][0]['description'] not in daily_forecasts[date]['descriptions']:
             daily_forecasts[date]['descriptions'].append(entry['weather'][0]['description'])
         daily_forecasts[date]['day'] = weekday
@@ -136,12 +137,23 @@ def dashboard():
     for day_forecast in sorted_forecast:
         day_forecast['icon'] = day_forecast['icons'][0]  # Example: use the first icon, or choose based on logic
         day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
+    
+     # Example values for map tile fetching. Adjust according to your needs.
+    layer = "clouds"  # Type of map layer you want to display, for testing, would like user to choose layer.
+    zoom = 10  # Zoom level for testing would like to give the ability to user.
+    map_url = fetch_map_data(layer, city, zoom) 
     return render_template(
         "dashboard.html",
         logged_in=current_user.is_authenticated,
         current_weather=current_weather,
-        forecast=sorted_forecast
+        forecast=sorted_forecast,
+        map_url=map_url
     )
+
+
+
+
+
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
