@@ -12,7 +12,7 @@ import collections
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
-@auth.route('/login', methods = ['GET','POST'])
+@auth.route('/login2', methods = ['GET','POST']) #change from login2 --> login
 def login():
     # Handle POST request to process login form submission
     if request.method == 'POST':
@@ -34,7 +34,7 @@ def login():
             flash("Incorrect username or password", category='error')
     
     # Render login page for GET requests or after unsuccessful login attempt
-    return render_template("login.html", logged_in=current_user.is_authenticated)
+    return render_template("login2.html", logged_in=current_user.is_authenticated) #change from login2 --> login
 
 @auth.route('/logout')
 @login_required
