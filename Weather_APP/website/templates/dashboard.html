@@ -118,12 +118,43 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 
 
 
+#geolocation-btn.filled {
+    background-color: #007bff; /* Change this to the desired filled button color */
+    color: #fff; /* Change this to the desired text color for the filled button */
+}
 
 
 
 
-*/
+
     </style>
+
+    <script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+            // Get the button element
+            const geolocationBtn = document.getElementById('geolocation-btn');
+
+            // Add an event listener to the button
+            geolocationBtn.addEventListener('click', function() {
+                // Toggle the 'filled' class on the button
+                this.classList.toggle('filled');
+
+                // Store the state of the button in localStorage
+                localStorage.setItem('geolocationBtnState', this.classList.contains('filled') ? 'filled' : '');
+            });
+
+            // Check if the button state is stored in localStorage
+            if (localStorage.getItem('geolocationBtnState') === 'filled') {
+                // If the button was filled, add the 'filled' class to it
+                geolocationBtn.classList.add('filled');
+            }
+        });
+
+
+
+    </script>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {%if messages%}
@@ -143,6 +174,9 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
       <div class="col-lg-4 mt-3">
         <form method = "POST" class="input-group search-form">
         <div class="input-group rounded" >
+            <button class="btn btn-outline-primary" id="geolocation-btn" type="button" name="location_services">
+                <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
+            </button>            
           <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" name = "city" />
           <button type="submit"class="btn btn-outline-primary me-2 search-btn">
             <i class="fa-solid fa-magnifying-glass-location"></i>
