@@ -5,51 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login and Sign Up Page</title>
     <style>
+        @keyframes backgroundSlide {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(120deg, #a1c4fd, #c2e9fb, #a1c4fd);
+            background-size: 300% 300%;
+            animation: backgroundSlide 10s ease infinite;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             flex-direction: column;
+            color: white;
         }
+
         .container {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.95);
             padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-            display: none; /* Not shown by default, controlled by JavaScript */
+            backdrop-filter: blur(5px);
         }
-        .site-title {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
+
         .form-group input {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
         }
+
+        .form-group input:focus {
+            outline: none;
+            border: 2px solid #a1c4fd;
+            box-shadow: 0 0 8px #a1c4fd;
+        }
+
         button {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+            background-color: #a1c4fd;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
+
         button:hover {
-            background-color: #0056b3;
-        }
+            background-color: #c2e9fb;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }        
         .bottom-links {
             text-align: center;
         }
@@ -58,6 +66,18 @@
             color: #007bff;
             padding: 0;
             border: none;
+        }
+        .form-container {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            display: none; /* Hide form on initialization */
+        }
+
+        .form-container.active {
+            opacity: 1;
+            transform: translateY(0);
+            display: block; /* Show form when activated */
         }
     </style>
 </head>
@@ -98,14 +118,36 @@
             <button type="button" onclick="showLogin()">Already have an account? Login</button>
         </div>
     </div>
+    <div id="loginForm" class="form-container">
+        <!-- login form container -->
+        <button onclick="showSignup()">Sign Up</button>
+    </div>
+    <div id="signupForm" class="form-container" style="display: none;">
+        <!-- signup form container -->
+        <button onclick="showLogin()">Back to Login</button>
+    </div>
     <script>
-        function showSignUp() {
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('signupContainer').style.display = 'block';
+        function showSignup() {
+            document.getElementById('loginForm').classList.remove('active');
+            document.getElementById('signupForm').classList.add('active');
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('signupForm').style.display = 'block';
         }
         function showLogin() {
             document.getElementById('signupContainer').style.display = 'none';
             document.getElementById('loginContainer').style.display = 'block';
+
+            // Retrieve username and password from localStorage and populate
+            var savedUsername = localStorage.getItem('username');
+            var savedPassword = localStorage.getItem('password');
+            if (savedUsername && savedPassword) {
+                document.getElementById('username').value = savedUsername;
+                document.getElementById('password').value = savedPassword;
+            }
+            document.getElementById('signupForm').classList.remove('active');
+            document.getElementById('loginForm').classList.add('active');
+            document.getElementById('signupForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
         }
         function checkCredentials() {
             var enteredUsername = document.getElementById('username').value.trim();
@@ -148,20 +190,5 @@
             // Display login form and populate username and password
             showLogin();
         }
-
-        function showLogin() {
-            document.getElementById('signupContainer').style.display = 'none';
-            document.getElementById('loginContainer').style.display = 'block';
-
-            // Retrieve username and password from localStorage and populate
-            var savedUsername = localStorage.getItem('username');
-            var savedPassword = localStorage.getItem('password');
-            if (savedUsername && savedPassword) {
-                document.getElementById('username').value = savedUsername;
-                document.getElementById('password').value = savedPassword;
-            }
-        }
-
-    // Initially show the login form
-    showLogin();
-</script>
+    </script>
+</body>
