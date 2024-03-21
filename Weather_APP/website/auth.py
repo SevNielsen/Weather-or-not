@@ -49,7 +49,7 @@ def sign_up():
         email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
-        city = request.form.get('city')
+        #city = request.form.get('city')
 
         member = Member.query.filter_by(username = username).first()
         if member:
@@ -61,10 +61,11 @@ def sign_up():
             flash("Please revise your information and try again", category="error")
         elif len(firstName) < 2 or len(lastName) < 2 or len(email) < 10 or len(password) < 2 or len(username) < 2:
             flash("Please provide enough characters and try again", category="error")
-        elif city is None or len(city) < 2:
+        #elif city is None or len(city) < 2:
             flash("Please Enter a Preferred City", category="error")
         else:
-            member = Member(username = username, first_name = firstName, last_name = lastName, email = email, city = city, password=generate_password_hash(password, method='pbkdf2:sha256'))
+            #member = Member(username = username, first_name = firstName, last_name = lastName, email = email, city = city, password=generate_password_hash(password, method='pbkdf2:sha256'))
+            member = Member(username = username, first_name = firstName, last_name = lastName, email = email, password=generate_password_hash(password, method='pbkdf2:sha256'))
             db.session.add(member)
             db.session.commit()
             login_user(member, remember=True)
@@ -78,19 +79,27 @@ def sign_up():
 @auth.route('/dashboard', methods = ['GET','POST'])
 @login_required
 def dashboard():
-    
-    
     def weekday_from_date(day, month, year):
         return calendar.day_name[datetime.date(day=day, month=month, year=year).weekday()]
-    if request.method == 'POST':
-        ci = request.form.get('city')
-    else:
-        ci = current_user.city
+    
     load_dotenv()
     apikey = os.getenv('API_KEY')
-    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(ci, apikey)
-    req = requests.get(url).json()
-    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+    if request.method == 'POST':
+        if request.form.get('city'):
+            ci = request.form.get('city')
+            url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(ci, apikey)
+            req = requests.get(url).json()
+            lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+            
+    else:
+        response = requests.get('https://api64.ipify.org?format=json').json()
+        url = "http://ip-api.com/json/{}".format(response['ip'])
+        response1 = requests.get(url).json()
+        
+        lon,lat,ci = response1['lon'], response1['lat'], response1['city']
+        current_user.city = ci
+    
+   
 
     url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
 
@@ -152,6 +161,30 @@ def profile():
 @auth.route('/bs', methods = ['GET','POST'])
 @login_required
 def bs():
+    if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+        ip_add = request.environ['REMOTE_ADDR']
+    else:
+        ip_add = request.environ['HTTP_X_FORWARDED_FOR']
+       
+   #esponse = requests.get('https://api64.ipify.org?format=json').json()
+   #direct = response["ip"]
+   #response2 = requests.get(f'https://ipapi.co/{direct}/json/').json()
+   #lat,lon,city = response2.get('latitude'), response2.get('latitude'), response2.get('city')
+    response = requests.get('https://api64.ipify.org?format=json').json()
+    url = "http://ip-api.com/json/{}".format(response['ip'])
+    response1 = requests.get(url).json()
+   
+ 
 
-    return render_template("bs.html",logged_in = current_user)
+    return render_template("bs.html",logged_in = current_user,lon = response1['lon'], lat = response1['lat'],ip = response["ip"], ip2 = ip_add  )
+   #return render_template("bs.html",logged_in = current_user,lon = lon, lat = lat, ip = direct, citiess = city  )
+
+   
+            
+  
+   
+    #return render_template("bs.html",logged_in = current_user,lon = lon, lat = lat,lon1=lon1, lat1=lat1 )
+    #return render_template("bs.html",logged_in = current_user,lon = lon, lat = lat,url44 = ip_add )
+    #return render_template("bs.html",logged_in = current_user,lon = lon, lat = lat, ip = direct, citiess = city  )
+
 

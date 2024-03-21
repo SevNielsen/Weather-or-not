@@ -133,24 +133,19 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 
 
 document.addEventListener("DOMContentLoaded", function() {
-            // Get the button element
-            const geolocationBtn = document.getElementById('geolocation-btn');
+    const geolocationBtn = document.getElementById('geolocation-btn');
 
-            // Add an event listener to the button
-            geolocationBtn.addEventListener('click', function() {
-                // Toggle the 'filled' class on the button
-                this.classList.toggle('filled');
+    geolocationBtn.addEventListener('click', function() {
+        this.classList.toggle('filled');
+        localStorage.setItem('geolocationBtnState', this.classList.contains('filled') ? 'filled' : '');
+        document.querySelector('input[name="location_services_clicked"]').value = '1';
+    });
 
-                // Store the state of the button in localStorage
-                localStorage.setItem('geolocationBtnState', this.classList.contains('filled') ? 'filled' : '');
-            });
+    if (localStorage.getItem('geolocationBtnState') === 'filled') {
+        geolocationBtn.classList.add('filled');
+    }
+});
 
-            // Check if the button state is stored in localStorage
-            if (localStorage.getItem('geolocationBtnState') === 'filled') {
-                // If the button was filled, add the 'filled' class to it
-                geolocationBtn.classList.add('filled');
-            }
-        });
 
 
 
@@ -176,7 +171,8 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="input-group rounded" >
             <button class="btn btn-outline-primary" id="geolocation-btn" type="button" name="location_services">
                 <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
-            </button>            
+            </button> 
+            <!-- <input type="hidden" name="location_services_clicked" value="0">  -->
           <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" name = "city" />
           <button type="submit"class="btn btn-outline-primary me-2 search-btn">
             <i class="fa-solid fa-magnifying-glass-location"></i>

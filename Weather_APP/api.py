@@ -9,19 +9,16 @@ from flask import request
 # https://stackoverflow.com/questions/50252156/get-location-of-user-in-flask. 
 # https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
 
-print("jjjk")
-
+'''
 if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
-    #print(request.environ['REMOTE_ADDR'])
     ip_add = request.environ['REMOTE_ADDR']
 else:
     ip_add = request.environ['HTTP_X_FORWARDED_FOR']
-    #print(request.environ['HTTP_X_FORWARDED_FOR'])
 
-#print(ip_add)
 
 url44 = 'http://ip-api.com/json/{}'.format(ip_add)
 
+'''
 
 '''
 def weekday_from_date(day, month, year):
@@ -113,6 +110,15 @@ print(listof)
 #print(data4)
 
 
+location = request.form.get('location_services_clicked')
+            if location == '1':
+                if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
+                    ip_add = request.environ['REMOTE_ADDR']
+                else:
+                    ip_add = request.environ['HTTP_X_FORWARDED_FOR']
+
+                url44 = 'http://ip-api.com/json/{}'.format(ip_add)
+                ci = url44.get('city')
 
 
 '''
