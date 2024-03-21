@@ -21,6 +21,7 @@ def login():
         if member:
             if check_password_hash(member.password, password):
                 login_user(member, remember=True)
+                #flash("Successfully Lo", category='success')
                 return redirect(url_for('auth.dashboard'))
                 #return redirect(url_for('auth.dashboard'))
             else:
@@ -48,6 +49,8 @@ def sign_up():
         email = request.form.get('email')
         username = request.form.get('username')
         password = request.form.get('password')
+        city = request.form.get('city')
+
         member = Member.query.filter_by(username = username).first()
         if member:
             flash("member already exists", category='error')
@@ -58,23 +61,23 @@ def sign_up():
             flash("Please revise your information and try again", category="error")
         elif len(firstName) < 2 or len(lastName) < 2 or len(email) < 10 or len(password) < 2 or len(username) < 2:
             flash("Please provide enough characters and try again", category="error")
+        elif city is None or len(city) < 2:
+            flash("Please Enter a Preferred City", category="error")
         else:
-            member = Member(username = username, first_name = firstName, last_name = lastName, email = email, password=generate_password_hash(password, method='pbkdf2:sha256'))
+            member = Member(username = username, first_name = firstName, last_name = lastName, email = email, city = city, password=generate_password_hash(password, method='pbkdf2:sha256'))
             db.session.add(member)
             db.session.commit()
             login_user(member, remember=True)
             flash("Account created successfully", category="success")
             #return redirect(url_for('auth.profile'), logged_in =current_user)
-            return redirect(url_for('auth.profile'))
+            return redirect(url_for('auth.dashboard'))
 
 
     return render_template("signup.html", logged_in = current_user)
 
 @auth.route('/dashboard', methods = ['GET','POST'])
 def dashboard():
-    if current_user.city is None:
-        flash('Please provide a preferred city',category='provide_city')
-        return redirect(url_for('profile.dashboard'))
+    
     
     def weekday_from_date(day, month, year):
         return calendar.day_name[datetime.date(day=day, month=month, year=year).weekday()]
@@ -134,17 +137,14 @@ def profile():
         #   current_user.username = request.form.get('username')
         if request.form.get('city'):
             current_user.city = request.form.get('city')
+
         #if request.form.get('check'):
         #    current_user.notifications = request.form.get(bool(int(request.form.get('check'))))
         if request.form.get('check'):
             current_user.notifications = True
         else:
             current_user.notifications = False
-        flash('Successfully Made Changes to Your Profile',category='changed')
         db.session.commit()
+        flash('Successfully Made Changes to Your Profile',category='success')
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
-@auth.route('/bs')
-def testing():
-    username1 = current_user.username
-    return render_template("bs.html", logged_in = current_user, username = username1)
