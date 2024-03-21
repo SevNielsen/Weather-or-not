@@ -118,12 +118,38 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
 
 
 
+#geolocation-btn.filled {
+    background-color: #007bff; /* Change this to the desired filled button color */
+    color: #fff; /* Change this to the desired text color for the filled button */
+}
 
 
 
 
-*/
+
     </style>
+
+    <script>
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const geolocationBtn = document.getElementById('geolocation-btn');
+
+    geolocationBtn.addEventListener('click', function() {
+        this.classList.toggle('filled');
+        localStorage.setItem('geolocationBtnState', this.classList.contains('filled') ? 'filled' : '');
+        document.querySelector('input[name="location_services_clicked"]').value = '1';
+    });
+
+    if (localStorage.getItem('geolocationBtnState') === 'filled') {
+        geolocationBtn.classList.add('filled');
+    }
+});
+
+
+
+
+    </script>
 
 {% with messages = get_flashed_messages(with_categories=true) %}
 {%if messages%}
@@ -143,6 +169,10 @@ filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#020024",endCo
       <div class="col-lg-4 mt-3">
         <form method = "POST" class="input-group search-form">
         <div class="input-group rounded" >
+            <button class="btn btn-outline-primary" id="geolocation-btn" type="button" name="location_services">
+                <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
+            </button> 
+            <!-- <input type="hidden" name="location_services_clicked" value="0">  -->
           <input type="search" class="form-control rounded" placeholder="Search for a location" aria-label="Search" aria-describedby="search-addon" name = "city" />
           <button type="submit"class="btn btn-outline-primary me-2 search-btn">
             <i class="fa-solid fa-magnifying-glass-location"></i>
