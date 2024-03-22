@@ -27,6 +27,18 @@ def fetch_coordinates(city):
         flash("Failed to connect to geolocation service", category='error')
         return None, None
 
+#Fetch map tile data.
+def fetch_map_data(layer, zoom, lat, lon):
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    map_url = f"https://tile.openweathermap.org/map/{layer}/{zoom}/{lat}/{lon}.png?appid={api_key}"
+    try:
+        # Actual fetching of the image is done by the client's browser.
+        return map_url
+    except Exception as e:
+        flash(f"Failed to build map data URL: {e}", category='error')
+        return None
+
 #Fetch current weather and forecast data for a given city.
 def fetch_weather_data(city):
     load_dotenv()
@@ -45,16 +57,5 @@ def fetch_weather_data(city):
         flash("Failed to connect to weather service", category='error')
         return None, None
 
-#Fetch map tile data.
-def fetch_map_data(layer, city, zoom):
-    load_dotenv()
-    api_key = os.getenv('API_KEY')
-    x, y = fetch_coordinates(city)
-    map_url = f"https://tile.openweathermap.org/map/{layer}/{zoom}/{x}/{y}.png?appid={api_key}"
-    try:
-        # Actual fetching of the image is done by the client's browser.
-        return map_url
-    except Exception as e:
-        flash(f"Failed to build map data URL: {e}", category='error')
-        return None
     
+

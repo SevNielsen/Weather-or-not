@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
 from .models import Member
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db 
@@ -9,7 +9,7 @@ import requests
 from datetime import datetime
 import calendar
 import collections
-from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data
+from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data, fetch_coordinates
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
@@ -139,7 +139,7 @@ def dashboard():
         day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
     
      # Example values for map tile fetching. Adjust according to your needs.
-    layer = "clouds"  # Type of map layer you want to display, for testing, would like user to choose layer.
+    layer = "temp_new"  # Type of map layer you want to display, for testing, would like user to choose layer.
     zoom = 10  # Zoom level for testing would like to give the ability to user.
     map_url = fetch_map_data(layer, city, zoom) 
     return render_template(
@@ -150,10 +150,30 @@ def dashboard():
         map_url=map_url
     )
 
+# Route to render your main page
+@auth.route('/weatherMap')
+def index():
+    return render_template('weatherMap.html', logged_in=current_user.is_authenticated)
 
+# Route to get coordinates for a city
+@auth.route('/get-coordinates/<city>')
+def get_coordinates(city):
+    latitude, longitude = fetch_coordinates(city)
+    if latitude and longitude:
+        return jsonify({'latitude': latitude, 'longitude': longitude})
+    else:
+        # If city not found or there was an error, return an error message
+        return jsonify({'error': 'City not found or API error occurred.'}), 404
 
-
-
+# Route to get the map tile data URL based on layer, city, and zoom
+@auth.route('/get-map-data/<layer>/<lat>/<lon>/<zoom>')
+def get_map_data(layer, lat, lon, zoom):
+    map_url = fetch_map_data(layer, lat, lon, zoom)
+    if map_url:
+        return jsonify({'map_url': map_url})
+    else:
+        # If unable to build map data URL, return an error message
+        return jsonify({'error': 'Failed to build map data URL.'}), 404
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
