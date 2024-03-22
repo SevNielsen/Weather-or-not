@@ -150,6 +150,7 @@ def dashboard():
         map_url=map_url
     )
 
+
 # Route to render your main page
 @auth.route('/weatherMap')
 def index():
@@ -283,3 +284,23 @@ def testing():
         flash("Failed to connect to weather service", category='error') 
     
     return render_template("dashboard2.html", logged_in=current_user.is_authenticated)
+
+@auth.route('/leafletMap')
+@login_required
+def showMap():
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    if api_key is None:
+        flash("API Key is not set", category='error')
+        # Handle the case where api_key is not set, maybe redirect or show an error page
+        return render_template('error.html'), 500
+    return render_template('leafletMap.html', api_key=api_key, logged_in=current_user.is_authenticated)
+
+@auth.route('/config')
+def config():
+    api_key = os.getenv('API_KEY')
+    if api_key is None:
+        # Return a json with error message if API key is not found
+        return jsonify({"error": "API key is not set"}), 500
+    return jsonify(apiKey=api_key)
+
