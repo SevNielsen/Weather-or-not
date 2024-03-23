@@ -2,102 +2,75 @@
 {% block title %}Weather Map{% endblock %}
 {% block content %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Leaflet and OpenWeatherMap Example</title>
-    <meta charset="utf-8" />
-    <!-- Bootstrap CSS -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet and OpenWeatherMap</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <!-- leaflet-openweathermap CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-
         #map {
-            height: 100vh; /* Use 100% of the viewport height */
-            width: 100vw; /* Use 100% of the viewport width */
-            position: absolute; /* Allows layering and centering */
-            top: 0;
-            left: 0;
-            z-index: 0; /* Ensures map is below the layer switch */
+            height: 85vh;
+            width: 85vw;
+            position: relative;
+            margin: 3vh -15vh; /* Centers the map with vertical and horizontal margins */
+            box-shadow: 0 0 8px rgba(0,0,0,0.5); /* Adds a subtle shadow for depth */
+            z-index: 0;
         }
-
-        .layer-switch {
+        .control-panel {
             position: absolute;
-            top: 50%; /* Centers vertically in the viewport */
-            left: 90%; /* Centers horizontally in the viewport */
-            transform: translate(-50%, -50%); /* Adjusts for the element's dimensions */
-            z-index: 1000; /* Ensures this is above the map */
-            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
-            padding: 10px;
-            border-radius: 5px; /* Optional: rounds the corners */
+            top: 9vh;
+            right: 0vw;
+            z-index: 1000;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            padding: 1rem;
         }
-        .btn-transparent {
-            background-color: transparent;
-            color: black;
-            border: 1px solid black; /* Adds a border to make the buttons stand out */
+        .btn-control {
+            margin: 0.25rem 0; /* Spacing between buttons */
         }
     </style>
 </head>
 <body>
 <div id="map"></div>
-<!-- Transparent Layer Switch Buttons -->
-<div class="layer-switch">
-    <div class="btn-group-vertical" role="group">
-        <button type="button" class="btn btn-transparent mb-2" id="clouds">Clouds</button>
-        <button type="button" class="btn btn-transparent mb-2" id="precip">Precipitation</button>
-        <button type="button" class="btn btn-transparent mb-2" id="temp">Temperature</button>
-        <button type="button" class="btn btn-transparent mb-2" id="pressure">Pressure</button>
-        <button type="button" class="btn btn-transparent" id="wind">Wind</button>
+<div class="control-panel">
+    <div class="btn-group-vertical">
+        <button type="button" class="btn btn-outline-primary btn-control" id="clouds">Clouds</button>
+        <button type="button" class="btn btn-outline-primary btn-control" id="precip">Precipitation</button>
+        <button type="button" class="btn btn-outline-primary btn-control" id="temp">Temperature</button>
+        <button type="button" class="btn btn-outline-primary btn-control" id="pressure">Pressure</button>
+        <button type="button" class="btn btn-outline-primary btn-control" id="wind">Wind</button>
     </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Initialize map
-        var map = L.map('map').setView([51.505, -0.09], 13);
-        // Add OpenStreetMap tiles
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '© OpenStreetMap contributors'
-        }).addTo(map);
-        // Fetch the API key and add weather layer
-        fetch('/config')
-            .then(response => response.json())
-            .then(config => {
-                var apiKey = config.apiKey;  // This needs to match the key name provided in your Flask route
-                layers = {
-                    temp: L.OWM.temperature({appId: apiKey}),
-                    clouds: L.OWM.clouds({appId: apiKey}),
-                    precip: L.OWM.precipitation({appId: apiKey}),
-                    pressure: L.OWM.pressure({appId: apiKey}),
-                    wind: L.OWM.wind({appId: apiKey})
-                };
-                map.addLayer(layers.temperature);
-            });
-        // Function to switch layers
+<script>
+    var map = L.map('map').setView([51.505, -0.09], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    fetch('/config').then(response => response.json()).then(config => {
+        var apiKey = config.apiKey;
+        var layers = {
+            temp: L.OWM.temperature({appId: apiKey}),
+            clouds: L.OWM.clouds({appId: apiKey}),
+            precip: L.OWM.precipitation({appId: apiKey}),
+            pressure: L.OWM.pressure({appId: apiKey}),
+            wind: L.OWM.wind({appId: apiKey})
+        };
         function switchLayer(layer) {
-            // Remove all layers
-            Object.values(layers).forEach(function(l) {
-                map.removeLayer(l);
-            });
-            // Add the selected layer
-            map.addLayer(layers[layer]);
+            Object.values(layers).forEach(l => map.removeLayer(l));
+            if(layers[layer]) map.addLayer(layers[layer]);
         }
-        // Add event listeners for buttons
-        document.getElementById('temp').addEventListener('click', function() { switchLayer('temp'); });
-        document.getElementById('clouds').addEventListener('click', function() { switchLayer('clouds'); });
-        document.getElementById('precip').addEventListener('click', function() { switchLayer('precip'); });
-        document.getElementById('pressure').addEventListener('click', function() { switchLayer('pressure'); });
-        document.getElementById('wind').addEventListener('click', function() { switchLayer('wind'); });
-    </script>
+        document.querySelectorAll('.btn-control').forEach(btn => {
+            btn.addEventListener('click', () => switchLayer(btn.id));
+        });
+    });
+</script>
 </body>
 </html>
 {% endblock %}

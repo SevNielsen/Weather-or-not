@@ -150,32 +150,6 @@ def dashboard():
         map_url=map_url
     )
 
-
-# Route to render your main page
-@auth.route('/weatherMap')
-def index():
-    return render_template('weatherMap.html', logged_in=current_user.is_authenticated)
-
-# Route to get coordinates for a city
-@auth.route('/get-coordinates/<city>')
-def get_coordinates(city):
-    latitude, longitude = fetch_coordinates(city)
-    if latitude and longitude:
-        return jsonify({'latitude': latitude, 'longitude': longitude})
-    else:
-        # If city not found or there was an error, return an error message
-        return jsonify({'error': 'City not found or API error occurred.'}), 404
-
-# Route to get the map tile data URL based on layer, city, and zoom
-@auth.route('/get-map-data/<layer>/<lat>/<lon>/<zoom>')
-def get_map_data(layer, lat, lon, zoom):
-    map_url = fetch_map_data(layer, lat, lon, zoom)
-    if map_url:
-        return jsonify({'map_url': map_url})
-    else:
-        # If unable to build map data URL, return an error message
-        return jsonify({'error': 'Failed to build map data URL.'}), 404
-
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
@@ -207,19 +181,14 @@ def testing():
     # Default city
     default_city = 'Vancouver'
     if request.method == 'POST':
-        # Extract city from form data
         city = request.form.get('city')
     else:
         # Use the user's default city or a predefined default
         city = current_user.city if current_user.city else default_city
-    # Load API key from .env file
     load_dotenv()
     api_key = os.getenv('API_KEY')
-    # Fetching current weather data 
     weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
     forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
-
-        # Make requests to OpenWeatherMap API
     try:
         weather_response = requests.get(weather_url).json()
         forecast_response = requests.get(forecast_url).json()
