@@ -11,7 +11,7 @@ L.OWM = L.TileLayer.extend({
 		maxZoom: 18,
 		showLegend: true,
 		legendImagePath: null,
-		legendPosition: 'bottomleft',
+		legendPosition: 'bottomright',
 		attribution: 'Weather from <a href="https://openweathermap.org/" alt="World Map and worldwide Weather Forecast online">OpenWeatherMap</a>'
 	},
 

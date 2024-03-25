@@ -11,64 +11,134 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
     <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
         #map {
-            height: 85vh;
-            width: 85vw;
-            position: relative;
-            margin: 3vh -15vh; /* Centers the map with vertical and horizontal margins */
-            box-shadow: 0 0 8px rgba(0,0,0,0.5); /* Adds a subtle shadow for depth */
-            z-index: 0;
+            height: calc(100vh - 60px); /* Full height */
+            width: calc(100vw - 250px); /* Full width minus control panel width */
+            position: absolute;
+            left: 250px; /* Width of the control panel */
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
         }
         .control-panel {
-            position: absolute;
-            top: 9vh;
-            right: 0vw;
-            z-index: 1000;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 5px;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            bottom: 0;
+            width: 250px; /* Fixed width for the control panel */
+            background-color: rgba(255, 255, 255, 0.9);
+            border-right: 1px solid #ddd;
             padding: 1rem;
+            box-sizing: border-box; /* Includes padding in the element's total width and height */
+            overflow-y: auto; /* Adds scroll to the control panel if content overflows */
+            display: flex;
+            flex-direction: column; /* Aligns items vertically */
+        }
+        #searchInput {
+            margin-bottom: 1rem;
         }
         .btn-control {
             margin: 0.25rem 0; /* Spacing between buttons */
+            flex-grow: 1; /* Allows buttons to fill available vertical space */
+        }
+        @media (max-width: 768px) {
+            #map {
+                width: 100vw;
+                left: 0;
+            }
+            .control-panel {
+                width: 100vw; /* Full screen width control panel */
+                height: auto; /* Auto height based on content */
+                bottom: 0; /* Align to bottom of the screen */
+                top: auto; /* Disable top alignment */
+                flex-direction: column; /* Aligns items vertically */
+                flex-wrap: wrap; /* Allows items to wrap */
+                padding: 0.5rem;
+            }
+            .btn-control, #searchInput {
+                flex: 1 1 auto; /* Allows buttons and search input to grow and shrink */
+                margin: 0.25rem; /* Adjust margin for tighter spacing */
+            }
         }
     </style>
 </head>
 <body>
 <div id="map"></div>
 <div class="control-panel">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search city...">
     <div class="btn-group-vertical">
-        <button type="button" class="btn btn-outline-primary btn-control" id="clouds">Clouds</button>
+        <button type="button" class="btn btn-outline-secondary btn-control" id="clouds">Clouds</button>
         <button type="button" class="btn btn-outline-primary btn-control" id="precip">Precipitation</button>
-        <button type="button" class="btn btn-outline-primary btn-control" id="temp">Temperature</button>
-        <button type="button" class="btn btn-outline-primary btn-control" id="pressure">Pressure</button>
-        <button type="button" class="btn btn-outline-primary btn-control" id="wind">Wind</button>
+        <button type="button" class="btn btn-outline-warning btn-control" id="temp">Temperature</button>
+        <button type="button" class="btn btn-outline-success btn-control" id="pressure">Pressure</button>
+        <button type="button" class="btn btn-outline-info btn-control" id="wind">Wind</button>
+        <button type="button" class="btn btn-outline-danger btn-control" id="clearLayers">Clear</button>
     </div>
 </div>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script>
-    var map = L.map('map').setView([51.505, -0.09], 13);
+    var map = L.map('map').setView([49.886, -119.496], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+    var apiKey;
+    // Fetch your API key from your server
     fetch('/config').then(response => response.json()).then(config => {
-        var apiKey = config.apiKey;
+        apiKey = config.apiKey; // Assign your API key
+        // Weather layers setup
         var layers = {
-            temp: L.OWM.temperature({appId: apiKey}),
-            clouds: L.OWM.clouds({appId: apiKey}),
-            precip: L.OWM.precipitation({appId: apiKey}),
-            pressure: L.OWM.pressure({appId: apiKey}),
-            wind: L.OWM.wind({appId: apiKey})
+            temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
+            clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
+            precip: L.OWM.precipitation({appId: apiKey, showLegend: true}),
+            pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
+            wind: L.OWM.wind({appId: apiKey, showLegend: true})
         };
+        // Function to switch between weather layers
         function switchLayer(layer) {
             Object.values(layers).forEach(l => map.removeLayer(l));
             if(layers[layer]) map.addLayer(layers[layer]);
         }
+        // Event listeners for weather layer buttons
         document.querySelectorAll('.btn-control').forEach(btn => {
             btn.addEventListener('click', () => switchLayer(btn.id));
         });
+        // Clear layers button functionality
+        document.getElementById('clearLayers').addEventListener('click', function() {
+            Object.values(layers).forEach(l => map.removeLayer(l));
+        });
+    });
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent the form from submitting
+            var city = this.value.trim();
+            if(city) {
+                var searchUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+
+                fetch(searchUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data && data.coord) { // Check if the coordinates are available
+                            map.setView([data.coord.lat, data.coord.lon], 10); // Center the map on the city
+                        } else {
+                            alert("City not found or there's an error with the request.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching city coordinates:", error);
+                        alert("Error fetching data for the city.");
+                    });
+            }
+        }
     });
 </script>
 </body>
