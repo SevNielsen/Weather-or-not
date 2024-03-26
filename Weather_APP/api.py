@@ -9,7 +9,21 @@ from flask import request
 # https://stackoverflow.com/questions/50252156/get-location-of-user-in-flask. 
 # https://stackoverflow.com/questions/3759981/get-ip-address-of-visitors-using-flask-for-python
 
+
 '''
+load_dotenv()
+apikey = os.getenv('API_KEY')
+ci = 'Kelowna'
+url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(ci, apikey)
+req = requests.get(url).json()
+lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
+
+req2 = requests.get(url2).json()
+print(req2)
+
+
+
 if request.environ.get('HTTP_X_FORWARDED_FOR') is None:
     ip_add = request.environ['REMOTE_ADDR']
 else:
