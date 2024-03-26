@@ -1,194 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login and Sign Up Page</title>
-    <style>
-        @keyframes backgroundSlide {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather or Not - Login</title>
+<style>
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(120deg, #a1c4fd, #c2e9fb, #a1c4fd);
-            background-size: 300% 300%;
-            animation: backgroundSlide 10s ease infinite;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-            color: white;
-        }
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f4f4f9;
+        color: #333;
+        text-align: center;
+        padding: 20px;
+    }
 
-        .container {
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(5px);
-        }
+    .container {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 
-        .form-group input {
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
+    h2 {
+        font-size: 28px;
+        color: #305f72;
+        margin-bottom: 20px;
+    }
 
-        .form-group input:focus {
-            outline: none;
-            border: 2px solid #a1c4fd;
-            box-shadow: 0 0 8px #a1c4fd;
-        }
+    /* Styles for input container and password container */
+    .input-container, .password-container {
+        position: relative;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: center;
+    }
 
-        button {
-            background-color: #a1c4fd;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
+    /* Styles for all input fields */
+    .input-container input, .password-container input {
+        width: calc(100% - 40px); /* Adjust width to ensure consistency across input fields */
+        padding: 12px 20px; /* Increase padding to leave space for the icon */
+        margin: 8px 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+        display: block;
+    }
 
-        button:hover {
-            background-color: #c2e9fb;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }        
-        .bottom-links {
-            text-align: center;
-        }
-        .bottom-links button {
-            background-color: transparent;
-            color: #007bff;
-            padding: 0;
-            border: none;
-        }
-        .form-container {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease, transform 0.5s ease;
-            display: none; /* Hide form on initialization */
-        }
+    /* Style for the password visibility toggle icon */
+    .password-eye {
+        position: absolute;
+        right: 10px;
+        top: 50%; /* Adjust to center */
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
 
-        .form-container.active {
-            opacity: 1;
-            transform: translateY(0);
-            display: block; /* Show form when activated */
-        }
-    </style>
+    /* Style for buttons, ensuring alignment with input fields */
+    .btn {
+        width: calc(100% - 40px); /* Ensure button width matches input fields */
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+        background-color: #45a049;
+    }
+
+    /* Styles for link buttons */
+    .link-btn {
+        background-color: transparent;
+        color: #007bff;
+        padding: 5px;
+        margin: 5px auto;
+        text-decoration: underline;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .link-btn:hover {
+        color: #0056b3;
+    }
+
+</style>
 </head>
 <body>
-    <div class="container" id="loginContainer">
-        <div class="site-title"><h1>Weather or Not</h1></div>
-        <h2>Login</h2>
-        <div class="form-group">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
+
+<div class="container">
+    <h2>Weather or Not</h2>
+    <form>
+
+        <div class="input-container">
+            <input type="text" placeholder="Username" required>
         </div>
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
+        <div class="input-container">
+            <input type="password" placeholder="Password" id="password" class="password" required>
+            <span onclick="togglePassword('password')" class="password-eye"></span>
         </div>
-        <button type="button" onclick="checkCredentials()">Login</button>
-        <div class="bottom-links">
-            <button type="button" onclick="showSignUp()">Don't have an account? Sign Up</button>
-        </div>
-    </div>
-    <div class="container" id="signupContainer">
-        <div class="site-title"><h1>Weather or Not</h1></div>
-        <h2>Sign Up</h2>
-        <div class="form-group">
-            <label for="newUsername">New Username:</label>
-            <input type="text" id="newUsername" name="newUsername" required>
-        </div>
-        <div class="form-group">
-            <label for="newPassword">New Password:</label>
-            <input type="password" id="newPassword" name="newPassword" required>
-        </div>
-        <div class="form-group">
-            <label for="confirmPassword">Confirm Password:</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required>
-        </div>
-        <button type="button" onclick="registerUser()">Sign Up</button>
-        <div class="bottom-links">
-            <button type="button" onclick="showLogin()">Already have an account? Login</button>
-        </div>
-    </div>
-    <div id="loginForm" class="form-container">
-        <!-- login form container -->
-        <button onclick="showSignup()">Sign Up</button>
-    </div>
-    <div id="signupForm" class="form-container" style="display: none;">
-        <!-- signup form container -->
-        <button onclick="showLogin()">Back to Login</button>
-    </div>
-    <script>
-        function showSignup() {
-            document.getElementById('loginForm').classList.remove('active');
-            document.getElementById('signupForm').classList.add('active');
-            document.getElementById('loginForm').style.display = 'none';
-            document.getElementById('signupForm').style.display = 'block';
+
+        <button type="submit" class="btn">Login</button>
+        <button type="button" class="btn link-btn" onclick="location.href='recovery.html'">Forget username or password</button>
+        <button type="button" class="btn link-btn" onclick="location.href='signup.html'">Sign Up</button>
+    </form>
+</div>
+
+<script>
+    function togglePassword(inputId) {
+        var input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+        } else {
+            input.type = "password";
         }
-        function showLogin() {
-            document.getElementById('signupContainer').style.display = 'none';
-            document.getElementById('loginContainer').style.display = 'block';
+    }
+</script>
 
-            // Retrieve username and password from localStorage and populate
-            var savedUsername = localStorage.getItem('username');
-            var savedPassword = localStorage.getItem('password');
-            if (savedUsername && savedPassword) {
-                document.getElementById('username').value = savedUsername;
-                document.getElementById('password').value = savedPassword;
-            }
-            document.getElementById('signupForm').classList.remove('active');
-            document.getElementById('loginForm').classList.add('active');
-            document.getElementById('signupForm').style.display = 'none';
-            document.getElementById('loginForm').style.display = 'block';
-        }
-        function checkCredentials() {
-            var enteredUsername = document.getElementById('username').value.trim();
-            var enteredPassword = document.getElementById('password').value.trim();
-
-            // Retrieve the username and password saved in localStorage
-            var savedUsername = localStorage.getItem('username');
-            var savedPassword = localStorage.getItem('password');
-
-            // Check if the entered credentials match the saved ones
-            if (enteredUsername === savedUsername && enteredPassword === savedPassword) {
-                // Redirect to the main page if login is successful
-                window.location.href = 'main.html';
-            } else {
-                // Alert the user if the credentials do not match
-                alert('Login failed. Incorrect username or password.');
-            }
-        }
-            // Called after successful registration, saves info and redirects to the login form
-        function registerUser() {
-            var username = document.getElementById('newUsername').value.trim();
-            var password = document.getElementById('newPassword').value.trim();
-            var confirmPassword = document.getElementById('confirmPassword').value.trim();
-
-            if (!username || !password) {
-                alert('Username and password cannot be empty.');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                alert('Passwords do not match.');
-                return;
-            }
-
-            // Save username and password to localStorage
-            localStorage.setItem('username', username);
-            localStorage.setItem('password', password);
-
-            alert('Sign Up successfully.');
-            // Display login form and populate username and password
-            showLogin();
-        }
-    </script>
 </body>
+</html>
