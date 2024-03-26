@@ -257,13 +257,7 @@ def testing():
 @auth.route('/leafletMap')
 @login_required
 def showMap():
-    load_dotenv()
-    api_key = os.getenv('API_KEY')
-    if api_key is None:
-        flash("API Key is not set", category='error')
-        # Handle the case where api_key is not set, maybe redirect or show an error page
-        return render_template('error.html'), 500
-    return render_template('leafletMap.html', api_key=api_key, logged_in=current_user.is_authenticated)
+    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
 
 @auth.route('/config')
 def config():
