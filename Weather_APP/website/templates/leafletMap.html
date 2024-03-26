@@ -91,10 +91,8 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
     var apiKey;
-    // Fetch your API key from your server
     fetch('/config').then(response => response.json()).then(config => {
-        apiKey = config.apiKey; // Assign your API key
-        // Weather layers setup
+        apiKey = config.apiKey; 
         var layers = {
             temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
             clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
@@ -102,7 +100,6 @@
             pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
             wind: L.OWM.wind({appId: apiKey, showLegend: true})
         };
-        // Function to switch between weather layers
         function switchLayer(layer) {
             Object.values(layers).forEach(l => map.removeLayer(l));
             if(layers[layer]) map.addLayer(layers[layer]);
@@ -111,7 +108,6 @@
         document.querySelectorAll('.btn-control').forEach(btn => {
             btn.addEventListener('click', () => switchLayer(btn.id));
         });
-        // Clear layers button functionality
         document.getElementById('clearLayers').addEventListener('click', function() {
             Object.values(layers).forEach(l => map.removeLayer(l));
         });
@@ -123,7 +119,6 @@
             var city = this.value.trim();
             if(city) {
                 var searchUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-
                 fetch(searchUrl)
                     .then(response => response.json())
                     .then(data => {
@@ -140,6 +135,38 @@
             }
         }
     });
+    // Map click event to display weather data in a popup
+    map.on('click', function(e) {
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${e.latlng.lat}&lon=${e.latlng.lng}&appid=${apiKey}&units=metric`)
+            .then(response => response.json())
+            .then(data => {
+                const popupContent = createWeatherPopupContent(data);
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(popupContent)
+                    .openOn(map);
+            })
+            .catch(error => console.error("Error fetching weather data: ", error));
+    });
+    function createWeatherPopupContent(data) {
+        // Use the CSS classes from leaflet-openweathermap.css for styling
+        let content = '<div class="owm-popup-name">' + (data.name ? `<a href="https://openweathermap.org/city/${data.id}" target="_blank">${data.name}</a>` : 'Unknown Location') + '</div>';
+        if(data.weather && data.weather[0]) {
+            content += '<div class="owm-popup-description">' + data.weather[0].description + '</div>';
+            content += '<div class="owm-popup-main"><img src="https://openweathermap.org/img/w/' + data.weather[0].icon + '.png" />';
+            content += '<span class="owm-popup-temp">' + Math.round(data.main.temp) + '&deg;C</span></div>';
+        }
+        content += '<div class="owm-popup-details">';
+        content += '<div class="owm-popup-detail">Humidity: ' + data.main.humidity + '%</div>';
+        content += '<div class="owm-popup-detail">Pressure: ' + data.main.pressure + ' hPa</div>';
+        if(data.wind) {
+            content += '<div class="owm-popup-detail">Wind Speed: ' + data.wind.speed + ' m/s</div>';
+        }
+        content += '</div>';
+        content += '<div class="owm-popup-timestamp">' + new Date(data.dt * 1000).toLocaleString() + '</div>';
+
+        return content;
+    }
 </script>
 </body>
 </html>
