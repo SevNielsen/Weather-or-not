@@ -1,0 +1,173 @@
+{% extends "navbar.html" %}
+{% block title %}Weather Map{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet and OpenWeatherMap</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow-x: hidden;
+            overflow-y: hidden;
+        }
+        #map {
+            height: calc(100vh - 60px); 
+            width: calc(100vw - 250px); 
+            position: absolute;
+            left: 250px; 
+            box-shadow: 0 0 8px rgba(0,0,0,0.5);
+        }
+        .control-panel {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            bottom: 0;
+            width: 250px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-right: 1px solid #ddd;
+            padding: 1rem;
+            box-sizing: border-box;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column; 
+        }
+        #searchInput {
+            margin-bottom: 1rem;
+        }
+        .btn-control {
+            margin: 0.25rem 0; 
+            flex-grow: 1; 
+        }
+        @media (max-width: 768px) {
+            #map {
+                width: 100vw;
+                left: 0;
+            }
+            .control-panel {
+                width: 100vw; 
+                height: auto; 
+                bottom: 0; 
+                top: auto; 
+                flex-direction: column; 
+                flex-wrap: wrap; 
+                padding: 0.5rem;
+            }
+            .btn-control, #searchInput {
+                flex: 1 1 auto; 
+                margin: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+<div class="control-panel">
+    <input type="text" id="searchInput" class="form-control" placeholder="Search city...">
+    <div class="btn-group-vertical">
+        <button type="button" class="btn btn-outline-secondary btn-control" id="clouds">Clouds</button>
+        <button type="button" class="btn btn-outline-primary btn-control" id="precip">Precipitation</button>
+        <button type="button" class="btn btn-outline-warning btn-control" id="temp">Temperature</button>
+        <button type="button" class="btn btn-outline-success btn-control" id="pressure">Pressure</button>
+        <button type="button" class="btn btn-outline-info btn-control" id="wind">Wind</button>
+        <button type="button" class="btn btn-outline-danger btn-control" id="clearLayers">Clear</button>
+    </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    var map = L.map('map').setView([49.886, -119.496], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    var apiKey;
+    fetch('/config').then(response => response.json()).then(config => {
+        apiKey = config.apiKey; 
+        var layers = {
+            temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
+            clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
+            precip: L.OWM.precipitation({appId: apiKey, showLegend: true}),
+            pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
+            wind: L.OWM.wind({appId: apiKey, showLegend: true})
+        };
+        function switchLayer(layer) {
+            Object.values(layers).forEach(l => map.removeLayer(l));
+            if(layers[layer]) map.addLayer(layers[layer]);
+        }
+        // Event listeners for weather layer buttons
+        document.querySelectorAll('.btn-control').forEach(btn => {
+            btn.addEventListener('click', () => switchLayer(btn.id));
+        });
+        document.getElementById('clearLayers').addEventListener('click', function() {
+            Object.values(layers).forEach(l => map.removeLayer(l));
+        });
+    });
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent the form from submitting
+            var city = this.value.trim();
+            if(city) {
+                var searchUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+                fetch(searchUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data && data.coord) { // Check if the coordinates are available
+                            map.setView([data.coord.lat, data.coord.lon], 10); // Center the map on the city
+                        } else {
+                            alert("City not found or there's an error with the request.");
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Error fetching city coordinates:", error);
+                        alert("Error fetching data for the city.");
+                    });
+            }
+        }
+    });
+    // Map click event to display weather data in a popup
+    map.on('click', function(e) {
+        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${e.latlng.lat}&lon=${e.latlng.lng}&appid=${apiKey}&units=metric`)
+            .then(response => response.json())
+            .then(data => {
+                const popupContent = createWeatherPopupContent(data);
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(popupContent)
+                    .openOn(map);
+            })
+            .catch(error => console.error("Error fetching weather data: ", error));
+    });
+    function createWeatherPopupContent(data) {
+        // Use the CSS classes from leaflet-openweathermap.css for styling
+        let content = '<div class="owm-popup-name">' + (data.name ? `<a href="https://openweathermap.org/city/${data.id}" target="_blank">${data.name}</a>` : 'Unknown Location') + '</div>';
+        if(data.weather && data.weather[0]) {
+            content += '<div class="owm-popup-description">' + data.weather[0].description + '</div>';
+            content += '<div class="owm-popup-main"><img src="https://openweathermap.org/img/w/' + data.weather[0].icon + '.png" />';
+            content += '<span class="owm-popup-temp">' + Math.round(data.main.temp) + '&deg;C</span></div>';
+        }
+        content += '<div class="owm-popup-details">';
+        content += '<div class="owm-popup-detail">Humidity: ' + data.main.humidity + '%</div>';
+        content += '<div class="owm-popup-detail">Pressure: ' + data.main.pressure + ' hPa</div>';
+        if(data.wind) {
+            content += '<div class="owm-popup-detail">Wind Speed: ' + data.wind.speed + ' m/s</div>';
+        }
+        content += '</div>';
+        content += '<div class="owm-popup-timestamp">' + new Date(data.dt * 1000).toLocaleString() + '</div>';
+
+        return content;
+    }
+</script>
+</body>
+</html>
+{% endblock %}
