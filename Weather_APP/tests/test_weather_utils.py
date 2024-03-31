@@ -1,10 +1,22 @@
 import pytest
 import requests_mock
 from unittest.mock import patch
+from website import create_app
 from website.weather_utils import weekday_from_date, fetch_coordinates, fetch_map_data, fetch_weather_data
+
+
+
 
 def test_weekday_from_date():
     assert weekday_from_date(25, 3, 2022) == 'Friday'
+
+@pytest.fixture
+def app_context():
+    app = create_app()
+    ctx = app.app_context()
+    ctx.push()
+    yield app
+    ctx.pop()
 
 @pytest.fixture
 def mock_requests():
@@ -24,7 +36,7 @@ def test_fetch_coordinates_success(mock_requests, mock_env):
     assert latitude == 48.8566
     assert longitude == 2.3522
 
-def test_fetch_coordinates_failure(mock_requests, mock_env):
+def test_fetch_coordinates_failure(mock_requests, mock_env, app_context):
     city = "UnknownCity"
     mock_url = f"http://api.openweathermap.org/geo/1.0/direct?q={city}&limit=1&appid=test_api_key"
     mock_requests.get(mock_url, json=[])
@@ -51,7 +63,7 @@ def test_fetch_weather_data_success(mock_requests, mock_env):
     assert weather_response is not None
     assert forecast_response is not None
 
-def test_fetch_weather_data_failure(mock_requests, mock_env):
+def test_fetch_weather_data_failure(mock_requests, mock_env, app_context):
     city = "UnknownCity"
     weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid=test_api_key&units=metric'
     forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid=test_api_key&units=metric'

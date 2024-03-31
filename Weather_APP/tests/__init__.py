@@ -7,7 +7,7 @@ import os
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-def create_test_app():
+def create_test_app(config_overrides=None):
     app = Flask(__name__, template_folder='Weather_APP/website/templates')
     app.config['TESTING'] = True
     app.config['SECRET_KEY'] = 'test_secret_key'
@@ -15,6 +15,8 @@ def create_test_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['WTF_CSRF_ENABLED'] = False  # Disable CSRF tokens in the forms for testing purposes.
 
+    if config_overrides:
+        app.config.update(config_overrides)
     # Initialize SQLAlchemy with the app
     db.init_app(app)
 
