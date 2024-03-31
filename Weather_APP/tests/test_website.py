@@ -1,4 +1,4 @@
-def test_weatherMap(client):
+def test_welcome(client):
     response = client.get("/")
-    assert b"<title>Home</title>" in response.data
+    assert b"<title>Welcome</title>" in response.data
 

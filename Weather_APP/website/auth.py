@@ -73,7 +73,7 @@ def sign_up():
             db.session.add(member)
             db.session.commit()
             # Log the user in and redirect to the profile page
-            login_user(new_member, remember=True)
+            login_user(member, remember=True)
             flash("Account created successfully", category="success")
             #return redirect(url_for('auth.profile'), logged_in =current_user)
             return redirect(url_for('auth.dashboard'))
