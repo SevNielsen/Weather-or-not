@@ -108,6 +108,7 @@ def dashboard():
     }
     '''
     load_dotenv()
+    '''
     apikey = os.getenv('API_KEY')
     url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(city, apikey)
     #'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
@@ -139,6 +140,8 @@ def dashboard():
             else:
                 ha = ha + 1
                 listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])    
+   '''
+   
     #layer = "temp_new"  
     #zoom = 10  
     #map_url = fetch_map_data(layer, city, zoom) 
@@ -179,7 +182,7 @@ def profile():
 @auth.route('/leafletMap')
 @login_required
 def showMap():
-    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
+    return render_template('leafletMap.html', logged_in=current_user)
 
 @auth.route('/config')
 def config():
@@ -189,3 +192,7 @@ def config():
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
 
+@auth.route('/testing')
+@login_required
+def test():
+    return render_template('testing.html', logged_in=current_user)
