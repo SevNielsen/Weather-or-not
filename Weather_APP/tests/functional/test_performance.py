@@ -1,6 +1,6 @@
 import pytest
 from flask import url_for
-from website import create_app
+from website.__init222 import create_app
 
 @pytest.fixture
 def app():
