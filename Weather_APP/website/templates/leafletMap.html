@@ -17,13 +17,13 @@
             height: 100%;
             width: 100%;
             overflow-x: hidden;
-            overflow-y: auto;
+            overflow-y: hidden;
         }
         #map {
-            height: calc(100vh - 60px); /* Full height */
-            width: calc(100vw - 250px); /* Full width minus control panel width */
+            height: calc(100vh - 60px); 
+            width: calc(100vw - 250px); 
             position: absolute;
-            left: 250px; /* Width of the control panel */
+            left: 250px; 
             box-shadow: 0 0 8px rgba(0,0,0,0.5);
         }
         .control-panel {
@@ -31,21 +31,21 @@
             top: 60px;
             left: 0;
             bottom: 0;
-            width: 250px; /* Fixed width for the control panel */
+            width: 250px;
             background-color: rgba(255, 255, 255, 0.9);
             border-right: 1px solid #ddd;
             padding: 1rem;
-            box-sizing: border-box; /* Includes padding in the element's total width and height */
-            overflow-y: auto; /* Adds scroll to the control panel if content overflows */
+            box-sizing: border-box;
+            overflow-y: auto; 
             display: flex;
-            flex-direction: column; /* Aligns items vertically */
+            flex-direction: column; 
         }
         #searchInput {
             margin-bottom: 1rem;
         }
         .btn-control {
-            margin: 0.25rem 0; /* Spacing between buttons */
-            flex-grow: 1; /* Allows buttons to fill available vertical space */
+            margin: 0.25rem 0; 
+            flex-grow: 1; 
         }
         @media (max-width: 768px) {
             #map {
@@ -53,17 +53,17 @@
                 left: 0;
             }
             .control-panel {
-                width: 100vw; /* Full screen width control panel */
-                height: auto; /* Auto height based on content */
-                bottom: 0; /* Align to bottom of the screen */
-                top: auto; /* Disable top alignment */
-                flex-direction: column; /* Aligns items vertically */
-                flex-wrap: wrap; /* Allows items to wrap */
+                width: 100vw; 
+                height: auto; 
+                bottom: 0; 
+                top: auto; 
+                flex-direction: column; 
+                flex-wrap: wrap; 
                 padding: 0.5rem;
             }
             .btn-control, #searchInput {
-                flex: 1 1 auto; /* Allows buttons and search input to grow and shrink */
-                margin: 0.25rem; /* Adjust margin for tighter spacing */
+                flex: 1 1 auto; 
+                margin: 0.25rem;
             }
         }
     </style>
@@ -91,10 +91,8 @@
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
     var apiKey;
-    // Fetch your API key from your server
     fetch('/config').then(response => response.json()).then(config => {
-        apiKey = config.apiKey; // Assign your API key
-        // Weather layers setup
+        apiKey = config.apiKey; 
         var layers = {
             temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
             clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
@@ -102,7 +100,6 @@
             pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
             wind: L.OWM.wind({appId: apiKey, showLegend: true})
         };
-        // Function to switch between weather layers
         function switchLayer(layer) {
             Object.values(layers).forEach(l => map.removeLayer(l));
             if(layers[layer]) map.addLayer(layers[layer]);
@@ -111,7 +108,6 @@
         document.querySelectorAll('.btn-control').forEach(btn => {
             btn.addEventListener('click', () => switchLayer(btn.id));
         });
-        // Clear layers button functionality
         document.getElementById('clearLayers').addEventListener('click', function() {
             Object.values(layers).forEach(l => map.removeLayer(l));
         });
@@ -123,7 +119,6 @@
             var city = this.value.trim();
             if(city) {
                 var searchUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-
                 fetch(searchUrl)
                     .then(response => response.json())
                     .then(data => {
