@@ -182,21 +182,3 @@ def profile():
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
 
-
-@auth.route('/leafletMap')
-@login_required
-def showMap():
-    return render_template('leafletMap.html', logged_in=current_user,username = current_user.username)
-
-@auth.route('/config')
-def config():
-    api_key = os.getenv('API_KEY')
-    if api_key is None:
-        # Return a json with error message if API key is not found
-        return jsonify({"error": "API key is not set"}), 500
-    return jsonify(apiKey=api_key)
-
-@auth.route('/testing')
-@login_required
-def test():
-    return render_template('testing.html', logged_in=current_user)
