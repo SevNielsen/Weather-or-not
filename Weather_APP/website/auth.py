@@ -13,11 +13,15 @@ from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
-@auth.route('/login2', methods = ['GET','POST']) #change from login2 --> login
+@auth.route('/')
+def home():
+    return render_template("welcome.html")
+
+@auth.route('/login', methods = ['GET','POST']) #change from login2 --> login
 def login():
     # Handle POST request to process login form submission
     if request.method == 'POST':
-        username = request.form.get('``         username')
+        username = request.form.get('username')
         password = request.form.get('password2')  ## Sam Jeon mr.perfecto183@gmail.com sammy ipad
         member = Member.query.filter_by(username = username).first()
         if member:
@@ -34,8 +38,7 @@ def login():
             # Flash error message if login details are incorrect
             flash("Incorrect username or password", category='error')
     
-    # Render login page for GET requests or after unsuccessful login attempt
-    return render_template("login2.html", logged_in=current_user.is_authenticated) #change from login2 --> login
+    return render_template("login.html", logged_in=current_user) 
 
 @auth.route('/logout')
 @login_required
@@ -72,8 +75,8 @@ def sign_up():
             member = Member(username = username, first_name = firstName, last_name = lastName, email = email, city = city, password=generate_password_hash(password, method='pbkdf2:sha256'))
             db.session.add(member)
             db.session.commit()
-            # Log the user in and redirect to the profile page
             login_user(member, remember=True)
+            #login_user(new_member, remember=True)
             flash("Account created successfully", category="success")
             #return redirect(url_for('auth.profile'), logged_in =current_user)
             return redirect(url_for('auth.dashboard'))
@@ -82,15 +85,16 @@ def sign_up():
     return render_template("signup.html", logged_in = current_user)
 
 @auth.route('/dashboard', methods = ['GET','POST'])
+@login_required
 def dashboard():
     if request.method == 'POST':
         # Extract city from form data
         city = request.form.get('city')
     else:
         # Use the user's default city or a predefined default
-        default_city = "Vancouver"
-        city = current_user.city if current_user.city else default_city
+        city = current_user.city
     # Fetch Weather data from weather_utils api connection method
+    '''
     weather_response, forecast_response = fetch_weather_data(city)
     if not weather_response or not forecast_response:
         return render_template("dashboard.html", logged_in=current_user.is_authenticated)
@@ -106,49 +110,51 @@ def dashboard():
         'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
         'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
     }
+    '''
+    load_dotenv()
     
-    #Parse data for daily forecast lambda allows stop forecasts at 5 days
-    daily_forecasts = collections.defaultdict(lambda: {
-        'temp_max': float('-inf'),
-        'temp_min': float('inf'),
-        'icons': [],
-        'descriptions': [],
-        'day': '',
-        'date': ''
-    })
-    # Process and aggregate data, organizing data by date.
-    for entry in forecast_response['list']:
-        date_text = entry['dt_txt']
-        date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
-        date = date_text[:10]  # Extract just the date part
-        weekday = calendar.day_name[date_obj.weekday()]
-        # Aggregate data
-        daily_forecasts[date]['temp_max'] = max(daily_forecasts[date]['temp_max'], entry['main']['temp_max'])
-        daily_forecasts[date]['temp_min'] = min(daily_forecasts[date]['temp_min'], entry['main']['temp_min'])
-        if entry['weather'][0]['icon'] not in daily_forecasts[date]['icons']:
-            daily_forecasts[date]['icons'].append(entry['weather'][0]['icon']) 
-        if entry['weather'][0]['description'] not in daily_forecasts[date]['descriptions']:
-            daily_forecasts[date]['descriptions'].append(entry['weather'][0]['description'])
-        daily_forecasts[date]['day'] = weekday
-        daily_forecasts[date]['date'] = date
-    # Convert aggregated data into a sorted list by date
-    sorted_forecast = [value for key, value in sorted(daily_forecasts.items(), key=lambda x: x[0])][:5]
-    # Prepare the forecast data for each day
-    for day_forecast in sorted_forecast:
-        day_forecast['icon'] = day_forecast['icons'][0]  # Example: use the first icon, or choose based on logic
-        day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
+    apikey = os.getenv('API_KEY')
+    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(city, apikey)
+    #'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
+    req = requests.get(url).json()
+    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
+
+    url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
+
+    req2 = requests.get(url2).json()
+    listof1 = []
+    ha = -1
+    for i in req2['list']:
+        if ha == -1:
+            temp = i.get('dt_txt').split()[0]
+            year, month, day = temp.split("-")
+            temp = weekday_from_date(int(day), int(month), int(year))
+            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
+            ha = ha + 1
+        else:
+            temp = i.get('dt_txt').split()[0]
+            year, month, day = temp.split("-")
+            temp = weekday_from_date(int(day), int(month), int(year))
+            if temp == listof1[ha][3]:
+                listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
+                listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
+                if listof1[ha][0] < i.get('main').get('temp_max'):
+                    listof1[ha][4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))
+                    listof1[ha][2] = i.get('weather')[0].get('description')
+            else:
+                ha = ha + 1
+                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])    
+   
+   
+    #layer = "temp_new"  
+    #zoom = 10  
+    #map_url = fetch_map_data(layer, city, zoom) 
+    return render_template("dashboard.html",logged_in=current_user,listof = listof1,username = current_user.username,cit2 = city)
+        #current_weather=current_weather,
+        #forecast=sorted_forecast,
+
+        #map_url=map_url
     
-     # Example values for map tile fetching. Adjust according to your needs.
-    layer = "temp_new"  # Type of map layer you want to display, for testing, would like user to choose layer.
-    zoom = 10  # Zoom level for testing would like to give the ability to user.
-    map_url = fetch_map_data(layer, city, zoom) 
-    return render_template(
-        "dashboard.html",
-        logged_in=current_user.is_authenticated,
-        current_weather=current_weather,
-        forecast=sorted_forecast,
-        map_url=map_url
-    )
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
@@ -175,95 +181,4 @@ def profile():
         flash('Successfully Made Changes to Your Profile',category='success')
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
-@auth.route('/dashboard2')
-@login_required
-def testing():
-    # Default city
-    default_city = 'Vancouver'
-    if request.method == 'POST':
-        city = request.form.get('city')
-    else:
-        # Use the user's default city or a predefined default
-        city = current_user.city if current_user.city else default_city
-    load_dotenv()
-    api_key = os.getenv('API_KEY')
-    weather_url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
-    forecast_url = f'https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric'
-    try:
-        weather_response = requests.get(weather_url).json()
-        forecast_response = requests.get(forecast_url).json()
-
-        if weather_response.get('cod') != '200':
-            flash(f"Error fetching current weather: {weather_response.get('message', 'Unknown error')}", category='error')
-        
-        if forecast_response.get('cod') != '200':
-            flash(f"Error fetching forecast: {forecast_response.get('message', 'Unknown error')}", category='error')
-
-        current_weather = {
-            'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
-            'temperature': weather_response['main']['temp'],
-            'feels_like': weather_response['main']['feels_like'],
-            'temp_min': weather_response['main']['temp_min'],
-            'temp_max': weather_response['main']['temp_max'],
-            'humidity': weather_response['main']['humidity'],
-            'city': weather_response['name'],
-            'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
-            'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
-        }
-        forecast_data = []
-        daily_forecasts = collections.defaultdict(lambda: {
-            'temp_max': float('-inf'),
-            'temp_min': float('inf'),
-            'icons': [],
-            'descriptions': [],
-            'day': '',
-            'date': ''
-        })
-        # Process and aggregate data
-        for entry in forecast_response['list']:
-            date_text = entry['dt_txt']
-            date_obj = datetime.strptime(date_text, '%Y-%m-%d %H:%M:%S')
-            date = date_text[:10]  # Extract just the date part
-            weekday = calendar.day_name[date_obj.weekday()]
-            
-            # Aggregate data
-            daily_forecasts[date]['temp_max'] = max(daily_forecasts[date]['temp_max'], entry['main']['temp_max'])
-            daily_forecasts[date]['temp_min'] = min(daily_forecasts[date]['temp_min'], entry['main']['temp_min'])
-            if entry['weather'][0]['icon'] not in daily_forecasts[date]['icons']:
-                daily_forecasts[date]['icons'].append(entry['weather'][0]['icon'])
-            if entry['weather'][0]['description'] not in daily_forecasts[date]['descriptions']:
-                daily_forecasts[date]['descriptions'].append(entry['weather'][0]['description'])
-            daily_forecasts[date]['day'] = weekday
-            daily_forecasts[date]['date'] = date
-
-        # Convert aggregated data into a sorted list by date
-        sorted_forecast = [value for key, value in sorted(daily_forecasts.items(), key=lambda x: x[0])][:5]
-
-        # Prepare the forecast data for each day
-        for day_forecast in sorted_forecast:
-            day_forecast['icon'] = day_forecast['icons'][0]  # Example: use the first icon, or choose based on logic
-            day_forecast['description'] = ', '.join(set(day_forecast['descriptions']))  # Combine all descriptions
-        return render_template(
-            "dashboard2.html",
-            logged_in=current_user.is_authenticated,
-            current_weather=current_weather,
-            forecast=sorted_forecast
-        )
-    except requests.RequestException:
-        flash("Failed to connect to weather service", category='error') 
-    
-    return render_template("dashboard2.html", logged_in=current_user.is_authenticated)
-
-@auth.route('/leafletMap')
-@login_required
-def showMap():
-    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
-
-@auth.route('/config')
-def config():
-    api_key = os.getenv('API_KEY')
-    if api_key is None:
-        # Return a json with error message if API key is not found
-        return jsonify({"error": "API key is not set"}), 500
-    return jsonify(apiKey=api_key)
 
