@@ -11,17 +11,16 @@ def test_app():
     with app.app_context():
         db.drop_all()
 
-@pytest.fixture(scope='function')
-def client(app):
+@pytest.fixture
+def test_client(test_app):
     """A test client for the app."""
-    return app.test_client()
-
+    return test_app.test_client()
 
 @pytest.fixture(scope='session')
-def db(app):
+def test_db(test_app):
     """Session-wide test database."""
     # Ensure the app is associated with this context
-    db.app = app
+    db.app = test_app
     
     # Create all tables
     db.create_all()
@@ -31,14 +30,14 @@ def db(app):
     # Drop all tables
     db.drop_all()
 
-@pytest.fixture(scope='function')
-def session(db, request):
+@pytest.fixture
+def test_session(test_db, request):
     """Creates a new database transaction for a test."""
-    transaction = db.engine.begin()
-    options = dict(bind=db.engine, binds={})
-    session = db.create_scoped_session(options=options)
+    transaction = test_db.engine.begin()
+    options = dict(bind=test_db.engine, binds={})
+    session = test_db.create_scoped_session(options=options)
     
-    db.session = session
+    test_db.session = session
 
     def teardown():
         transaction.rollback()
@@ -46,4 +45,3 @@ def session(db, request):
     
     request.addfinalizer(teardown)
     return session
-
