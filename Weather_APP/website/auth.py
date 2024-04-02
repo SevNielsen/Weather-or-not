@@ -13,6 +13,10 @@ from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
+@auth.route('/')
+def home():
+    return render_template("welcome.html")
+
 @auth.route('/login', methods = ['GET','POST']) #change from login2 --> login
 def login():
     # Handle POST request to process login form submission
