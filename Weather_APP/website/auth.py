@@ -17,7 +17,7 @@ auth = Blueprint('auth', __name__)
 def login():
     # Handle POST request to process login form submission
     if request.method == 'POST':
-        username = request.form.get('username')
+        username = request.form.get('``         username')
         password = request.form.get('password2')  ## Sam Jeon mr.perfecto183@gmail.com sammy ipad
         member = Member.query.filter_by(username = username).first()
         if member:
@@ -257,13 +257,7 @@ def testing():
 @auth.route('/leafletMap')
 @login_required
 def showMap():
-    load_dotenv()
-    api_key = os.getenv('API_KEY')
-    if api_key is None:
-        flash("API Key is not set", category='error')
-        # Handle the case where api_key is not set, maybe redirect or show an error page
-        return render_template('error.html'), 500
-    return render_template('leafletMap.html', api_key=api_key, logged_in=current_user.is_authenticated)
+    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
 
 @auth.route('/config')
 def config():
