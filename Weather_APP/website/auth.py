@@ -181,4 +181,15 @@ def profile():
         flash('Successfully Made Changes to Your Profile',category='success')
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
+@auth.route('/leafletMap')
+@login_required
+def showMap():
+    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
 
+@auth.route('/config')
+def config():
+    api_key = os.getenv('API_KEY')
+    if api_key is None:
+        # Return a json with error message if API key is not found
+        return jsonify({"error": "API key is not set"}), 500
+    return jsonify(apiKey=api_key)
