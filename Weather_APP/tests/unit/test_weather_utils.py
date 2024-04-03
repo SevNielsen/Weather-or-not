@@ -1,7 +1,7 @@
 import pytest
 import requests_mock
 from unittest.mock import patch
-from website.__init222 import create_app
+from website import create_app
 from website.weather_utils import weekday_from_date, fetch_coordinates, fetch_map_data, fetch_weather_data
 
 

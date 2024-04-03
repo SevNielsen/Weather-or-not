@@ -1,7 +1,7 @@
 import pytest
 from werkzeug.security import generate_password_hash
-from website.models import Member
-from website.__init222 import create_test_app, db
+from website.models import Member, db
+
 
 @pytest.fixture
 def app():
