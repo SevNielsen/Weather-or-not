@@ -1,6 +1,6 @@
 import pytest
 from flask_testing import TestCase
-from website.__init222 import create_app, db
+from website import create_app, db
 from website.models import User
 
 class TestUserCRUD(TestCase):

@@ -12,3 +12,4 @@ class Member(db.Model, UserMixin):
     first_name = db.Column(db.String(50))
     last_name = db.Column(db.String(50))
     date = db.Column(db.DateTime(timezone=True), default=func.now())
+
