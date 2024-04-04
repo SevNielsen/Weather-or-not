@@ -7,16 +7,6 @@ import requests
 from flask import flash
 from dotenv import load_dotenv
 
-def weekday_from_date(day, month, year):
-    try:
-        # Check if the year, month, and day combination is valid
-        valid_date = date(year, month, day)
-        return calendar.day_name[valid_date.weekday()]
-    except ValueError as e:
-        print(f"Invalid date encountered: {e}")
-        
-        return "2024"
-
 def fetch_coordinates(city):
     load_dotenv()
     api_key = os.getenv('API_KEY')
@@ -100,11 +90,12 @@ def process_forecast_data(forecast_json):
     processed_forecasts = []
     last_date = ""
     for forecast in forecast_json['list']:
+        if len(processed_forecasts) >= 5:
+            break 
         forecast_date = forecast.get('dt_txt').split()[0]
         if forecast_date != last_date:
-            # Extract date components and compute the weekday name
-            year, month, day = forecast_date.split("-")
-            weekday_name = weekday_from_date(int(year), int(month), int(day))
+            year, month, day = map(int, forecast_date.split("-"))
+            weekday_name = weekday_from_date(year, month, day)
 
             # Prepare additional data points from the forecast
             weather_data = forecast.get('weather')[0]
@@ -125,3 +116,11 @@ def process_forecast_data(forecast_json):
             })
             last_date = forecast_date
     return processed_forecasts
+
+def weekday_from_date(year, month, day):
+    try:
+        valid_date = date(year, month, day)
+        return calendar.day_name[valid_date.weekday()]
+    except ValueError as e:
+        print(f"Invalid date encountered: {e}")
+        return "Invalid Date" 
