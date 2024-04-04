@@ -67,6 +67,20 @@ body {
     border-color: #0056b3;
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
+
+/* Additional styles for enhanced forecast */
+.weather-detail {
+  font-size: 0.85rem; /* Smaller font for details */
+  color: #666; /* Subdued text color for details */
+}
+.custom-card2 .weather-icon {
+  width: 80px; /* Bigger icon for better visibility */
+  margin-bottom: 10px; /* Spacing below icon */
+}
+.custom-card2 p {
+  margin-bottom: 0; /* Remove margin to tighten up space */
+}
+
 </style>
 <!-- Bootstrap CSS for styling and responsiveness -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -151,7 +165,7 @@ body {
         </div>
       </div>
    <!-- 5 Day Forecast -->
-<div class="card mt-3">
+   <div class="card mt-3">
     <div class="card-body">
       <h5 class="card-title">5 Day Forecast</h5>
       <div class="row">
@@ -162,10 +176,14 @@ body {
               <div class="flex-grow-1 mt-2 text-center">
                 <p>
                   <span>{{ forecast['date'] }}</span><br />
-                  <span><img src="{{ forecast['icon'] }}" alt="Weather Icon"></span><br />
-                  <span>{{ forecast['max_temp'] }}°</span><br />
-                  <span>{{ forecast['min_temp'] }}°</span><br />
+                  <img src="{{ forecast['icon'] }}" alt="Weather Icon" class="weather-icon"><br />
+                  <span>{{ forecast['max_temp'] }}° / {{ forecast['min_temp'] }}°</span><br />
                   <span>{{ forecast['description'] }}</span>
+                </p>
+                <p class="weather-detail">
+                  Humidity: {{ forecast['humidity'] }}%<br>
+                  Pressure: {{ forecast['pressure'] }} hPa<br>
+                  Wind: {{ forecast['wind_speed'] }} m/s, {{ forecast['wind_deg'] }}°
                 </p>
               </div>
             </div>
@@ -249,15 +267,12 @@ body {
         function updateMapView(lat, lon) {
             map.setView([lat, lon], 13);
         }
-
         // Check if latitude and longitude are provided and update the map view
         var lat = document.getElementById('lat').value;
         var lon = document.getElementById('lon').value;
         if(lat && lon) {
             updateMapView(lat, lon);
         }
-   
     });
-    </script>
-    
+    </script>   
 {% endblock %}
