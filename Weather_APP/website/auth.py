@@ -107,39 +107,7 @@ def dashboard():
 
     # Return the dashboard template with all the necessary data
     return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city)
-    '''
-    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(city, apikey)
-    req = requests.get(url).json()
-    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
-
-    url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
-
-    req2 = requests.get(url2).json()
-    listof1 = []
-    ha = -1
-    for i in req2['list']:
-        if ha == -1:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
-            ha = ha + 1
-        else:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            if temp == listof1[ha][3]:
-                listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
-                listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
-                if listof1[ha][0] < i.get('main').get('temp_max'):
-                    listof1[ha][4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))
-                    listof1[ha][2] = i.get('weather')[0].get('description')
-            else:
-                ha = ha + 1
-                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])    
-
-    return render_template("dashboard.html",logged_in=current_user,listof = listof1,username = current_user.username,cit2 = city)
-'''
+   
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
