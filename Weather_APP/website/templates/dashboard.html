@@ -219,23 +219,29 @@ body {
       </div>
     </div>
   </div>
-    <!-- Weather Chart -->
-    <div class="card mt-3">
-      <div class="card-body">
-        <h5 class="card-title">Weather Chart</h5>
-        <div class="btn-group mb-2" role="group" aria-label="Chart Toggles">
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="temperature">Temperature</button>
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="humidity">Humidity</button>
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="wind_speed">Wind Speed</button>
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="pressure">Pressure</button>
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="comparison">Comparison</button>
-        </div>
-        <div id="chartContainer" class="chart-section">
-          <img id="weatherChart" src="Weather_APP/website/static/charts/temperature_chart.png" alt="Weather Chart" style="max-width: 100%; height: auto;">
-        </div>
-      </div>
+<!-- Enhanced Weather Chart with Bootstrap -->
+<div class="card mt-3 shadow-sm"> 
+  <div class="card-header">
+    <h5 class="card-title m-0">Weather Chart</h5> 
+  </div>
+  <div class="card-body">
+    <!-- Use d-flex and flex-wrap for responsiveness -->
+    <div class="d-flex flex-wrap justify-content-center mb-2" aria-label="Chart Toggles">
+      <button type="button" class="btn btn-outline-secondary m-1 chart-toggle" data-chart="temperature"><i class="fas fa-thermometer-half"></i> Temperature</button>
+      <button type="button" class="btn btn-outline-secondary m-1 chart-toggle" data-chart="humidity"><i class="fas fa-tint"></i> Humidity</button>
+      <button type="button" class="btn btn-outline-secondary m-1 chart-toggle" data-chart="wind_speed"><i class="fas fa-wind"></i> Wind Speed</button>
+      <button type="button" class="btn btn-outline-secondary m-1 chart-toggle" data-chart="pressure"><i class="fas fa-tachometer-alt"></i> Pressure</button>
+      <button type="button" class="btn btn-outline-secondary m-1 chart-toggle" data-chart="comparison"><i class="fas fa-chart-bar"></i> Comparison</button>
+    </div>
+    <div id="chartContainer" class="chart-section">
+      <img id="weatherChart" src="{{ url_for('static', filename='charts/temperature_chart.png') }}" alt="Weather Chart" class="img-fluid">
     </div>
   </div>
+  <div class="card-footer text-muted">
+    Updated just now
+  </div>
+</div>
+
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
