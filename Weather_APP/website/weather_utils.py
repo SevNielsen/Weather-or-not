@@ -6,6 +6,7 @@ import os
 import requests
 from flask import flash
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
 
 def fetch_coordinates(city):
     load_dotenv()
@@ -25,7 +26,6 @@ def fetch_coordinates(city):
         flash("Failed to connect to geolocation service", category='error')
         return None, None
 
-#Fetch map tile data.
 def fetch_map_data(layer, zoom, lat, lon):
     load_dotenv()
     api_key = os.getenv('API_KEY')
@@ -124,3 +124,97 @@ def weekday_from_date(year, month, day):
     except ValueError as e:
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
+
+def create_temperature_chart(processed_forecasts, chart_path='/mnt/data/temperature_chart.png'):
+    """Generate a temperature chart for the processed forecast data."""
+    days = [forecast['date'] for forecast in processed_forecasts]
+    max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
+    min_temps = [forecast['min_temp'] for forecast in processed_forecasts]
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(days, max_temps, label='Max Temperature', marker='o', color='red')
+    plt.plot(days, min_temps, label='Min Temperature', marker='o', color='blue')
+    plt.title('5-Day Weather Forecast: Temperature')
+    plt.xlabel('Day')
+    plt.ylabel('Temperature (Celsius)')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(chart_path)
+    plt.close()
+
+def create_humidity_chart(processed_forecasts, chart_path='/mnt/data/humidity_chart.png'):
+    """Generate a humidity chart for the processed forecast data."""
+    days = [forecast['date'] for forecast in processed_forecasts]
+    humidity_levels = [forecast['humidity'] for forecast in processed_forecasts]
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(days, humidity_levels, color='cyan')
+    plt.title('5-Day Weather Forecast: Humidity')
+    plt.xlabel('Day')
+    plt.ylabel('Humidity (%)')
+    plt.savefig(chart_path)
+    plt.close()
+
+def create_wind_speed_chart(processed_forecasts, chart_path='/mnt/data/wind_speed_chart.png'):
+    """Generate a wind speed chart for the processed forecast data."""
+    days = [forecast['date'] for forecast in processed_forecasts]
+    wind_speeds = [forecast['wind_speed'] for forecast in processed_forecasts]
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(days, wind_speeds, label='Wind Speed', marker='>', linestyle='-', color='purple')
+    plt.title('5-Day Weather Forecast: Wind Speed')
+    plt.xlabel('Day')
+    plt.ylabel('Wind Speed (km/h)')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(chart_path)
+    plt.close()
+
+def create_pressure_chart(processed_forecasts, chart_path='/mnt/data/pressure_chart.png'):
+    """Generate a pressure chart for the processed forecast data."""
+    days = [forecast['date'] for forecast in processed_forecasts]
+    pressures = [forecast['pressure'] for forecast in processed_forecasts]
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(days, pressures, label='Atmospheric Pressure', marker='s', linestyle='--', color='green')
+    plt.title('5-Day Weather Forecast: Atmospheric Pressure')
+    plt.xlabel('Day')
+    plt.ylabel('Pressure (hPa)')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig(chart_path)
+    plt.close()
+
+def create_comparison_chart(processed_forecasts, chart_path='/mnt/data/comparison_chart.png'):
+    """Generate a comparison chart for temperature, humidity, and wind speed."""
+    days = [forecast['date'] for forecast in processed_forecasts]
+    max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
+    humidities = [forecast['humidity'] for forecast in processed_forecasts]
+    wind_speeds = [forecast['wind_speed'] for forecast in processed_forecasts]
+    
+    fig, ax1 = plt.subplots(figsize=(10, 6))
+
+    color = 'tab:red'
+    ax1.set_xlabel('Day')
+    ax1.set_ylabel('Max Temperature (Celsius)', color=color)
+    ax1.plot(days, max_temps, color=color, label='Max Temp', marker='o')
+    ax1.tick_params(axis='y', labelcolor=color)
+
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    color = 'tab:blue'
+    ax2.set_ylabel('Humidity (%)', color=color)
+    ax2.plot(days, humidities, color=color, label='Humidity', marker='x')
+    ax2.tick_params(axis='y', labelcolor=color)
+
+    ax3 = ax1.twinx()
+    ax3.spines['right'].set_position(('outward', 60))
+    color = 'tab:green'
+    ax3.set_ylabel('Wind Speed (km/h)', color=color)
+    ax3.plot(days, wind_speeds, color=color, label='Wind Speed', marker='>')
+    ax3.tick_params(axis='y', labelcolor=color)
+
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+    plt.title('5-Day Weather Forecast Comparison: Temperature, Humidity, and Wind Speed')
+    fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
+    plt.savefig(chart_path)
+    plt.close()
