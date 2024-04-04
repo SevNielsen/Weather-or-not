@@ -125,7 +125,7 @@ def weekday_from_date(year, month, day):
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
 
-def create_temperature_chart(processed_forecasts, chart_path='/mnt/data/temperature_chart.png'):
+def create_temperature_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/temprature_chart.png'):
     """Generate a temperature chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
@@ -142,7 +142,7 @@ def create_temperature_chart(processed_forecasts, chart_path='/mnt/data/temperat
     plt.savefig(chart_path)
     plt.close()
 
-def create_humidity_chart(processed_forecasts, chart_path='/mnt/data/humidity_chart.png'):
+def create_humidity_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/humidity_chart.png'):
     """Generate a humidity chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     humidity_levels = [forecast['humidity'] for forecast in processed_forecasts]
@@ -155,7 +155,7 @@ def create_humidity_chart(processed_forecasts, chart_path='/mnt/data/humidity_ch
     plt.savefig(chart_path)
     plt.close()
 
-def create_wind_speed_chart(processed_forecasts, chart_path='/mnt/data/wind_speed_chart.png'):
+def create_wind_speed_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/wind_speed_chart.png'):
     """Generate a wind speed chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     wind_speeds = [forecast['wind_speed'] for forecast in processed_forecasts]
@@ -170,7 +170,7 @@ def create_wind_speed_chart(processed_forecasts, chart_path='/mnt/data/wind_spee
     plt.savefig(chart_path)
     plt.close()
 
-def create_pressure_chart(processed_forecasts, chart_path='/mnt/data/pressure_chart.png'):
+def create_pressure_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/pressure_chart.png'):
     """Generate a pressure chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     pressures = [forecast['pressure'] for forecast in processed_forecasts]
@@ -185,7 +185,7 @@ def create_pressure_chart(processed_forecasts, chart_path='/mnt/data/pressure_ch
     plt.savefig(chart_path)
     plt.close()
 
-def create_comparison_chart(processed_forecasts, chart_path='/mnt/data/comparison_chart.png'):
+def create_comparison_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/comparison_chart.png'):
     """Generate a comparison chart for temperature, humidity, and wind speed."""
     days = [forecast['date'] for forecast in processed_forecasts]
     max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
