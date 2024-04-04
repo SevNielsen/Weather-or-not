@@ -9,43 +9,43 @@ body {
 }
 
 .custom-card, .custom-card1, .custom-card7, .custom-card2 {
-    background: #ffffff; /* Light background to make text more readable */
-    border-radius: 30px; /* More pronounced rounded corners for a "bubbly" feel */
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); /* Softer shadow */
-    transition: transform 0.3s ease; /* Smooth transition for hover effect */
+    background: #ffffff; 
+    border-radius: 30px; 
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); 
+    transition: transform 0.3s ease; 
 }
 
 .custom-card:hover, .custom-card1:hover, .custom-card7:hover, .custom-card2:hover {
-    transform: translateY(-5px); /* Slight lift effect on hover */
+    transform: translateY(-5px); 
 }
 
 .card-body {
     padding: 20px;
-    text-align: center; /* Center align text for a cleaner look */
+    text-align: center; 
 }
 
 /* Enhanced styling for chart and map sections */
 .chart-section, .map-section {
     margin-top: 30px;
-    background: #f9f9f9; /* Softer background */
+    background: #f9f9f9; 
     padding: 30px;
     border-radius: 30px;
     box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    align-items: center; /* Center content for a unified look */
+    align-items: center; 
 }
 
 .chart-section h5, .map-section h5 {
     margin-bottom: 20px;
-    color: #007bff; /* Bright color for titles to stand out */
+    color: #007bff; 
 }
 
-/* Additional styles for visual enhancements */
+
 .btn-outline-primary {
     border-color: #007bff;
     color: #007bff;
-    border-radius: 20px; /* Rounded buttons */
+    border-radius: 20px; 
     padding: 10px 20px;
 }
 
@@ -56,12 +56,12 @@ body {
 
 .input-group {
     border-radius: 20px;
-    overflow: hidden; /* Ensures inner elements conform to button's rounded edges */
+    overflow: hidden; 
 }
 
 .form-control {
-    border: 2px solid #007bff; /* Highlighted border for input */
-    box-shadow: none; /* Removing default focus glow for a cleaner look */
+    border: 2px solid #007bff; 
+    box-shadow: none;
 }
 
 .form-control:focus {
@@ -71,6 +71,8 @@ body {
 </style>
 <!-- Bootstrap CSS for styling and responsiveness -->
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
 <div class="container-fluid mt-4">
     <!-- Alerts for messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -89,7 +91,7 @@ body {
     <div class="row justify-content-end">
       <div class="col-lg-4">
         <form method="POST" class="input-group mb-3">
-          <input type="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
+          <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
           <div class="input-group-append">
             <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
           </div>
@@ -100,7 +102,7 @@ body {
     <div class="container-fluid mt-4"> 
         <div class="row">
           <!-- Current Weather Column -->
-          <div class="col-md-6 col-lg-4 mx-auto">
+          <div class="col-lg-4">
             <div class="card text-center">
               <div class="card-body">
                 <h5 class="card-title">
@@ -136,11 +138,12 @@ body {
             </div>
           </div>
           <!-- Map Column -->
-          <div class="col-md-6">
+          <div class="col-lg-8">
             <div class="card">
               <div class="card-body">
                 <h5 class="card-title">Weather Map</h5>
-                <div id="weatherMap" style="height: 250px;"> <!-- Map Placeholder --></div>
+                <div id="map" style="height: 400px;"> </div>
+                <div class="map-layer-controls"></div>
               </div>
             </div>
           </div>
@@ -179,10 +182,64 @@ body {
       </div>
     </div>
   </div>
-  <!-- Optional JavaScript -->
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-  
-  {% endblock %}
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var map = L.map('map').setView([49.886, -119.496], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    
+        // Dynamically fetch the API key
+        fetch('/config').then(response => response.json()).then(config => {
+            var apiKey = config.apiKey;
+    
+            var layers = {
+                temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
+                pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
+                wind: L.OWM.wind({appId: apiKey, showLegend: true}),
+                clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
+                precip: L.OWM.precipitation({appId: apiKey, showLegend: true})
+            };
+    
+            var controlPanel = L.control({position: 'topright'});
+            controlPanel.onAdd = function(map) {
+                var div = L.DomUtil.create('div', 'layer-control-panel btn-group-vertical');
+                div.style.zIndex = "1000"; 
+                div.innerHTML = Object.keys(layers).map(function(layer) {
+                    return `<button type="button" class="btn btn-outline-secondary btn-sm mb-1" data-layer="${layer}">${layer.charAt(0).toUpperCase() + layer.slice(1)}</button>`;
+                }).join('') + `<button type="button" class="btn btn-danger btn-sm mt-2" id="clearLayers">Clear Layers</button>`;
+                return div;
+            };
+            controlPanel.addTo(map);
+    
+            L.DomEvent.on(controlPanel.getContainer(), 'click', function(e) {
+                if (e.target && e.target.dataset.layer) {
+                    switchLayer(e.target.dataset.layer);
+                } else if (e.target && e.target.id === 'clearLayers') {
+                    clearLayers();
+                }
+            });
+    
+            function switchLayer(layerName) {
+                clearLayers();
+                currentLayer = layers[layerName];
+                map.addLayer(currentLayer);
+            }
+    
+            function clearLayers() {
+                if (currentLayer) {
+                    map.removeLayer(currentLayer);
+                    currentLayer = null;
+                }
+            }
+        }).catch(error => console.error("Failed to fetch API key:", error));
+    });
+    </script>
+{% endblock %}
