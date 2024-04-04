@@ -196,32 +196,35 @@ body {
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
     
-        // Dynamically fetch the API key
         fetch('/config').then(response => response.json()).then(config => {
             var apiKey = config.apiKey;
-    
+            var currentLayer = null;
             var layers = {
-                temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
-                pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
-                wind: L.OWM.wind({appId: apiKey, showLegend: true}),
-                clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
-                precip: L.OWM.precipitation({appId: apiKey, showLegend: true})
+            temp: L.OWM.temperature({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            pressure: L.OWM.pressure({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            wind: L.OWM.wind({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            clouds: L.OWM.clouds({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            precip: L.OWM.precipitation({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'})
             };
-    
+
             var controlPanel = L.control({position: 'topright'});
             controlPanel.onAdd = function(map) {
                 var div = L.DomUtil.create('div', 'layer-control-panel btn-group-vertical');
                 div.style.zIndex = "1000"; 
                 div.innerHTML = Object.keys(layers).map(function(layer) {
-                    return `<button type="button" class="btn btn-outline-secondary btn-sm mb-1" data-layer="${layer}">${layer.charAt(0).toUpperCase() + layer.slice(1)}</button>`;
-                }).join('') + `<button type="button" class="btn btn-danger btn-sm mt-2" id="clearLayers">Clear Layers</button>`;
+                    return `<button type="button" class="btn btn-outline-secondary btn-sm mb-1" data-layer="${layer}" aria-label="Show ${layer} layer">${layer.charAt(0).toUpperCase() + layer.slice(1)}</button>`;
+                }).join('') + `<button type="button" class="btn btn-danger btn-sm mt-2" id="clearLayers" aria-label="Clear layers">Clear Layers</button>`;
                 return div;
             };
             controlPanel.addTo(map);
     
             L.DomEvent.on(controlPanel.getContainer(), 'click', function(e) {
+                var buttons = document.querySelectorAll('.layer-control-panel button');
+                buttons.forEach(button => button.classList.remove('active')); 
+    
                 if (e.target && e.target.dataset.layer) {
                     switchLayer(e.target.dataset.layer);
+                    e.target.classList.add('active'); 
                 } else if (e.target && e.target.id === 'clearLayers') {
                     clearLayers();
                 }
@@ -242,4 +245,5 @@ body {
         }).catch(error => console.error("Failed to fetch API key:", error));
     });
     </script>
+    
 {% endblock %}
