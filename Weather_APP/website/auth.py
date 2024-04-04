@@ -13,9 +13,11 @@ from .weather_utils import fetch_forecast_data, fetch_current_weather_data, proc
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
+
 @auth.route('/')
 def home():
     return render_template("welcome.html")
+
 
 @auth.route('/login', methods = ['GET','POST']) #change from login2 --> login
 def login():
