@@ -91,22 +91,14 @@ def dashboard():
         city = request.form.get('city')
     else:
         city = current_user.city
-
-    # Fetch the current weather data for the city
     current_weather = fetch_current_weather_data(city)
-
-    # Initialize forecasts to None in case the following logic fails to fetch or process forecast data
     forecasts = None
-    
-    # Proceed to fetch and process forecast data if coordinates are successfully fetched
     lat, lon = fetch_coordinates(city)
     if lat is not None and lon is not None:
         forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
         if forecast_json:
             forecasts = process_forecast_data(forecast_json)
-
-    # Return the dashboard template with all the necessary data
-    return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city)
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
    
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required

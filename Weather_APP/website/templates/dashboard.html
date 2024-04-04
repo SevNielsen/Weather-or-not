@@ -24,7 +24,6 @@ body {
     text-align: center; 
 }
 
-/* Enhanced styling for chart and map sections */
 .chart-section, .map-section {
     margin-top: 30px;
     background: #f9f9f9; 
@@ -92,6 +91,8 @@ body {
       <div class="col-lg-4">
         <form method="POST" class="input-group mb-3">
           <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
+          <input type="hidden" id="lat" value="{{ lat }}">
+          <input type="hidden" id="lon" value="{{ lon }}">
           <div class="input-group-append">
             <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
           </div>
@@ -195,7 +196,7 @@ body {
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
-    
+
         fetch('/config').then(response => response.json()).then(config => {
             var apiKey = config.apiKey;
             var currentLayer = null;
@@ -243,6 +244,19 @@ body {
                 }
             }
         }).catch(error => console.error("Failed to fetch API key:", error));
+   
+            // Function to update map view based on latitude and longitude
+        function updateMapView(lat, lon) {
+            map.setView([lat, lon], 13);
+        }
+
+        // Check if latitude and longitude are provided and update the map view
+        var lat = document.getElementById('lat').value;
+        var lon = document.getElementById('lon').value;
+        if(lat && lon) {
+            updateMapView(lat, lon);
+        }
+   
     });
     </script>
     
