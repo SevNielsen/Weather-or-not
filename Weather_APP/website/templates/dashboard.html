@@ -69,16 +69,12 @@ body {
 }
 
 /* Additional styles for enhanced forecast */
-.weather-detail {
-  font-size: 0.85rem; /* Smaller font for details */
-  color: #666; /* Subdued text color for details */
-}
 .custom-card2 .weather-icon {
-  width: 80px; /* Bigger icon for better visibility */
+  width: 60px; /* Adjust icon size */
   margin-bottom: 10px; /* Spacing below icon */
 }
-.custom-card2 p {
-  margin-bottom: 0; /* Remove margin to tighten up space */
+.weather-detail {
+  font-size: 0.9rem; /* Detail text size */
 }
 
 </style>
@@ -167,25 +163,25 @@ body {
    <!-- 5 Day Forecast -->
    <div class="card mt-3">
     <div class="card-body">
-      <h5 class="card-title">5 Day Forecast</h5>
+      <h5 class="card-title text-center">5 Day Forecast</h5>
       <div class="row">
         {% for forecast in forecasts %}
-        <div class="col-md-2 col-sm-4 mb-3">
-          <div class="custom-card2">
-            <div class="d-flex">
-              <div class="flex-grow-1 mt-2 text-center">
-                <p>
-                  <span>{{ forecast['date'] }}</span><br />
-                  <img src="{{ forecast['icon'] }}" alt="Weather Icon" class="weather-icon"><br />
-                  <span>{{ forecast['max_temp'] }}° / {{ forecast['min_temp'] }}°</span><br />
-                  <span>{{ forecast['description'] }}</span>
-                </p>
-                <p class="weather-detail">
-                  Humidity: {{ forecast['humidity'] }}%<br>
-                  Pressure: {{ forecast['pressure'] }} hPa<br>
-                  Wind: {{ forecast['wind_speed'] }} m/s, {{ forecast['wind_deg'] }}°
-                </p>
-              </div>
+        <!-- Adjusted to use col-sm-6 for small devices and col-md-2 for medium to large devices, adding col-lg for larger screens -->
+        <div class="col-sm-6 col-md-2 col-lg mb-3 px-md-2">
+          <div class="card custom-card2 h-100">
+            <div class="card-body">
+              <h6 class="card-title">{{ forecast['date'] }}</h6>
+              <img src="{{ forecast['icon'] }}" alt="Weather Icon" class="weather-icon mx-auto d-block">
+              <p class="card-text">
+                {{ forecast['max_temp'] }}° / {{ forecast['min_temp'] }}°<br>
+                <small class="text-muted">{{ forecast['description'] }}</small>
+              </p>
+              <p class="weather-detail">
+                Humidity: {{ forecast['humidity'] }}%<br>
+                Pressure: {{ forecast['pressure'] }} hPa<br>
+                Wind: {{ forecast['wind_speed'] }} m/s<br>
+                Direction: {{ forecast['wind_deg'] }}°
+              </p>
             </div>
           </div>
         </div>
@@ -193,6 +189,7 @@ body {
       </div>
     </div>
   </div>
+  
     <!-- Weather Chart -->
     <div class="card mt-3">
       <div class="card-body">
