@@ -128,96 +128,112 @@ def weekday_from_date(year, month, day):
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
 
+import calendar
+import datetime
+from datetime import datetime, date
+import os
+import requests
+from flask import flash
+from dotenv import load_dotenv
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
+# Existing functions (fetch_coordinates, fetch_map_data, fetch_current_weather_data, fetch_forecast_data, process_forecast_data, weekday_from_date) remain unchanged.
+
+# Constants for design
+FIG_SIZE = (8, 5)
+FONT_SIZE = 12
+TITLE_SIZE = 14
+LINE_WIDTH = 2
+MARKER_SIZE = 8
+GRID_COLOR = '#aaaaaa'
+
+# Enhanced chart functions
+def create_chart_base(title, x_label, y_label, figsize=FIG_SIZE):
+    plt.figure(figsize=figsize)
+    plt.title(title, fontsize=TITLE_SIZE, pad=20)
+    plt.xlabel(x_label, fontsize=FONT_SIZE)
+    plt.ylabel(y_label, fontsize=FONT_SIZE)
+    plt.xticks(fontsize=FONT_SIZE)
+    plt.yticks(fontsize=FONT_SIZE)
+    plt.grid(color=GRID_COLOR, linestyle='--', linewidth=0.5)
+    plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+
+def save_chart(chart_path):
+    plt.savefig(chart_path, bbox_inches='tight')
+    plt.close()
+
 def create_temperature_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/temperature_chart.png'):
-    """Generate a temperature chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
     min_temps = [forecast['min_temp'] for forecast in processed_forecasts]
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(days, max_temps, label='Max Temperature', marker='o', color='red')
-    plt.plot(days, min_temps, label='Min Temperature', marker='o', color='blue')
-    plt.title('5-Day Weather Forecast: Temperature')
-    plt.xlabel('Day')
-    plt.ylabel('Temperature (Celsius)')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(chart_path)
-    plt.close()
+
+    create_chart_base('5-Day Weather Forecast: Temperature', 'Day', 'Temperature (Celsius)')
+    plt.plot(days, max_temps, label='Max Temperature', marker='o', color='red', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.plot(days, min_temps, label='Min Temperature', marker='o', color='blue', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.legend(fontsize=FONT_SIZE)
+    save_chart(chart_path)
 
 def create_humidity_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/humidity_chart.png'):
-    """Generate a humidity chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     humidity_levels = [forecast['humidity'] for forecast in processed_forecasts]
-    
-    plt.figure(figsize=(10, 6))
+
+    create_chart_base('5-Day Weather Forecast: Humidity', 'Day', 'Humidity (%)')
     plt.bar(days, humidity_levels, color='cyan')
-    plt.title('5-Day Weather Forecast: Humidity')
-    plt.xlabel('Day')
-    plt.ylabel('Humidity (%)')
-    plt.savefig(chart_path)
-    plt.close()
+    save_chart(chart_path)
 
 def create_wind_speed_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/wind_speed_chart.png'):
-    """Generate a wind speed chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     wind_speeds = [forecast['wind_speed'] for forecast in processed_forecasts]
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(days, wind_speeds, label='Wind Speed', marker='>', linestyle='-', color='purple')
-    plt.title('5-Day Weather Forecast: Wind Speed')
-    plt.xlabel('Day')
-    plt.ylabel('Wind Speed (km/h)')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(chart_path)
-    plt.close()
+
+    create_chart_base('5-Day Weather Forecast: Wind Speed', 'Day', 'Wind Speed (km/h)')
+    plt.plot(days, wind_speeds, label='Wind Speed', marker='>', linestyle='-', color='purple', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.legend(fontsize=FONT_SIZE)
+    save_chart(chart_path)
 
 def create_pressure_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/pressure_chart.png'):
-    """Generate a pressure chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     pressures = [forecast['pressure'] for forecast in processed_forecasts]
-    
-    plt.figure(figsize=(10, 6))
-    plt.plot(days, pressures, label='Atmospheric Pressure', marker='s', linestyle='--', color='green')
-    plt.title('5-Day Weather Forecast: Atmospheric Pressure')
-    plt.xlabel('Day')
-    plt.ylabel('Pressure (hPa)')
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(chart_path)
-    plt.close()
+
+    create_chart_base('5-Day Weather Forecast: Atmospheric Pressure', 'Day', 'Pressure (hPa)')
+    plt.plot(days, pressures, label='Atmospheric Pressure', marker='s', linestyle='--', color='green', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.legend(fontsize=FONT_SIZE)
+    save_chart(chart_path)
 
 def create_comparison_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/comparison_chart.png'):
-    """Generate a comparison chart for temperature, humidity, and wind speed."""
     days = [forecast['date'] for forecast in processed_forecasts]
     max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
     humidities = [forecast['humidity'] for forecast in processed_forecasts]
     wind_speeds = [forecast['wind_speed'] for forecast in processed_forecasts]
-    
-    fig, ax1 = plt.subplots(figsize=(10, 6))
 
-    color = 'tab:red'
-    ax1.set_xlabel('Day')
-    ax1.set_ylabel('Max Temperature (Celsius)', color=color)
-    ax1.plot(days, max_temps, color=color, label='Max Temp', marker='o')
-    ax1.tick_params(axis='y', labelcolor=color)
+    create_chart_base('5-Day Weather Forecast Comparison', 'Day', 'Value', figsize=(9, 5))
 
-    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-    color = 'tab:blue'
-    ax2.set_ylabel('Humidity (%)', color=color)
-    ax2.plot(days, humidities, color=color, label='Humidity', marker='x')
-    ax2.tick_params(axis='y', labelcolor=color)
+    # First y-axis for max temperature
+    ax1 = plt.gca()
+    ax1.set_ylabel('Max Temperature (Celsius)', color='tab:red', fontsize=FONT_SIZE)
+    ax1.plot(days, max_temps, color='tab:red', label='Max Temp', marker='o', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    ax1.tick_params(axis='y', labelcolor='tab:red')
 
+    # Second y-axis for humidity
+    ax2 = ax1.twinx()
+    ax2.set_ylabel('Humidity (%)', color='tab:blue', fontsize=FONT_SIZE)
+    ax2.plot(days, humidities, color='tab:blue', label='Humidity', marker='x', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    ax2.tick_params(axis='y', labelcolor='tab:blue')
+
+    # Third y-axis for wind speed
     ax3 = ax1.twinx()
     ax3.spines['right'].set_position(('outward', 60))
-    color = 'tab:green'
-    ax3.set_ylabel('Wind Speed (km/h)', color=color)
-    ax3.plot(days, wind_speeds, color=color, label='Wind Speed', marker='>')
-    ax3.tick_params(axis='y', labelcolor=color)
+    ax3.set_ylabel('Wind Speed (km/h)', color='tab:green', fontsize=FONT_SIZE)
+    ax3.plot(days, wind_speeds, color='tab:green', label='Wind Speed', marker='>', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    ax3.tick_params(axis='y', labelcolor='tab:green')
 
-    fig.tight_layout()  # otherwise the right y-label is slightly clipped
-    plt.title('5-Day Weather Forecast Comparison: Temperature, Humidity, and Wind Speed')
-    fig.legend(loc="upper right", bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
-    plt.savefig(chart_path)
-    plt.close()
+    # Add all legends together
+    lines, labels = ax1.get_legend_handles_labels()
+    lines2, labels2 = ax2.get_legend_handles_labels()
+    lines3, labels3 = ax3.get_legend_handles_labels()
+    ax1.legend(lines + lines2 + lines3, labels + labels2 + labels3, loc='best', fontsize=FONT_SIZE)
+
+    save_chart(chart_path)
+
+
