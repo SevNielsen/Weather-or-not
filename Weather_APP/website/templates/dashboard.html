@@ -97,19 +97,41 @@ body {
       </div>
     </div>
     <!-- Current Weather and Map -->
-    <div class="container-fluid mt-4"> <!-- Ensures maximum width of the layout -->
-        <div class="row"> <!-- Ensures columns are in the same row -->
+    <div class="container-fluid mt-4"> 
+        <div class="row">
           <!-- Current Weather Column -->
-          <div class="col-md-6">
-            <div class="card">
+          <div class="col-md-6 col-lg-4 mx-auto">
+            <div class="card text-center">
               <div class="card-body">
-                <h5 class="card-title">Current Weather</h5>
-                <span>{{ current_weather.city }}, {{ current_weather.country }}</span><br />
-                <span><img src="{{ current_weather.icon }}" alt="Weather Icon"></span><br />
-                <span>{{ current_weather.temperature }}°C</span><br />
-                <span>High: {{ current_weather.temperature_max }}°C</span><br />
-                <span>Low: {{ current_weather.temperature_min }}°C</span><br />
-                <span>{{ current_weather.weather_description }}</span>
+                <h5 class="card-title">
+                  {{ current_weather.city }}, {{ current_weather.country }}
+                </h5>
+                <img src="{{ current_weather.icon }}" alt="Weather Icon" class="my-3" style="width: 80px;"> <!-- Increased size slightly for focus -->
+                <h6 class="card-subtitle mb-2 text-muted">
+                  <span class="badge badge-primary">{{ current_weather.weather_description }}</span>
+                </h6>
+                <div class="my-3">
+                  <span class="font-weight-bold" style="font-size: 1.5em;">{{ current_weather.temperature }}°C</span>
+                  <div class="text-muted">Feels like: {{ current_weather.feels_like }}°C</div>
+                </div>
+                <div class="my-4">
+                  <div class="row">
+                    <div class="col">
+                      Humidity: {{ current_weather.humidity }}%<br>
+                      Pressure: {{ current_weather.pressure }} hPa
+                    </div>
+                    <div class="col">
+                      Wind: {{ current_weather.wind_speed }} m/s<br>
+                      Visibility: {{ current_weather.visibility }} meters
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-footer text-muted">
+                <div class="row">
+                  <div class="col">Sunrise: {{ current_weather.sunrise }}</div>
+                  <div class="col">Sunset: {{ current_weather.sunset }}</div>
+                </div>
               </div>
             </div>
           </div>
