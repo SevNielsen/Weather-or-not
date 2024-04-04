@@ -1,6 +1,6 @@
 import pytest
-from website.__init222 import create_app
-from website.__init222 import db
+from website import create_app
+from website  import db
 
 @pytest.fixture
 def test_app():

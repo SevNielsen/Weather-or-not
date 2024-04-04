@@ -9,13 +9,20 @@ import requests
 from datetime import datetime
 import calendar
 import collections
-from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data, fetch_coordinates
+from .weather_utils import (
+    fetch_current_weather_data, fetch_coordinates,
+    fetch_forecast_data, process_forecast_data,
+    create_temperature_chart, create_humidity_chart,
+    create_wind_speed_chart, create_pressure_chart,
+    create_comparison_chart )
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
+
 
 @auth.route('/')
 def home():
     return render_template("welcome.html")
+
 
 @auth.route('/login', methods = ['GET','POST']) #change from login2 --> login
 def login():
@@ -84,77 +91,29 @@ def sign_up():
 
     return render_template("signup.html", logged_in = current_user)
 
-@auth.route('/dashboard', methods = ['GET','POST'])
+@auth.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     if request.method == 'POST':
-        # Extract city from form data
         city = request.form.get('city')
     else:
-        # Use the user's default city or a predefined default
         city = current_user.city
-    # Fetch Weather data from weather_utils api connection method
-    '''
-    weather_response, forecast_response = fetch_weather_data(city)
-    if not weather_response or not forecast_response:
-        return render_template("dashboard.html", logged_in=current_user.is_authenticated)
-    #Parse Data for current weather
-    current_weather = {
-        'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
-        'temperature': weather_response['main']['temp'],
-        'feels_like': weather_response['main']['feels_like'],
-        'temp_min': weather_response['main']['temp_min'],
-        'temp_max': weather_response['main']['temp_max'],
-        'humidity': weather_response['main']['humidity'],
-        'city': weather_response['name'],
-        'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
-        'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
-    }
-    '''
-    load_dotenv()
-    
-    apikey = os.getenv('API_KEY')
-    url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(city, apikey)
-    #'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
-    req = requests.get(url).json()
-    lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
-
-    url2 = 'https://api.openweathermap.org/data/2.5/forecast?lat={}&lon={}&appid={}&units=metric'.format(lat, lon, apikey)
-
-    req2 = requests.get(url2).json()
-    listof1 = []
-    ha = -1
-    for i in req2['list']:
-        if ha == -1:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])
-            ha = ha + 1
-        else:
-            temp = i.get('dt_txt').split()[0]
-            year, month, day = temp.split("-")
-            temp = weekday_from_date(int(day), int(month), int(year))
-            if temp == listof1[ha][3]:
-                listof1[ha][0] = max(int(i.get('main').get('temp_max')), listof1[ha][0])
-                listof1[ha][1] = min(int(i.get('main').get('temp_min')), listof1[ha][1])
-                if listof1[ha][0] < i.get('main').get('temp_max'):
-                    listof1[ha][4] = 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))
-                    listof1[ha][2] = i.get('weather')[0].get('description')
-            else:
-                ha = ha + 1
-                listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])    
+    current_weather = fetch_current_weather_data(city)
+    forecasts = None
+    lat, lon = fetch_coordinates(city)
+    if lat is not None and lon is not None:
+        forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
+        if forecast_json:
+            forecasts = process_forecast_data(forecast_json)
+            create_temperature_chart(forecasts, 'Weather_APP/website/static/charts/temperature_chart.png')
+            create_humidity_chart(forecasts, 'Weather_APP/website/static/charts/humidity_chart.png')
+            create_wind_speed_chart(forecasts, 'Weather_APP/website/static/charts/wind_speed_chart.png')
+            create_pressure_chart(forecasts, 'Weather_APP/website/static/charts/pressure_chart.png')
+            create_comparison_chart(forecasts, 'Weather_APP/website/static/charts/comparison_chart.png')
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
    
-   
-    #layer = "temp_new"  
-    #zoom = 10  
-    #map_url = fetch_map_data(layer, city, zoom) 
-    return render_template("dashboard.html",logged_in=current_user,listof = listof1,username = current_user.username,cit2 = city)
-        #current_weather=current_weather,
-        #forecast=sorted_forecast,
 
-        #map_url=map_url
-    
+
 
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
@@ -181,4 +140,15 @@ def profile():
         flash('Successfully Made Changes to Your Profile',category='success')
     return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
+@auth.route('/leafletMap')
+@login_required
+def showMap():
+    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
 
+@auth.route('/config')
+def config():
+    api_key = os.getenv('API_KEY')
+    if api_key is None:
+        # Return a json with error message if API key is not found
+        return jsonify({"error": "API key is not set"}), 500
+    return jsonify(apiKey=api_key)

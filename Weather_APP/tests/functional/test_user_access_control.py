@@ -1,7 +1,7 @@
 import pytest
 from flask_login import login_user, logout_user, current_user
 from website.models import User
-from website.__init222 import create_app, db
+from website import create_app, db
 
 @pytest.fixture
 def app():
