@@ -68,13 +68,43 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-/* Additional styles for enhanced forecast */
 .custom-card2 .weather-icon {
-  width: 60px; /* Adjust icon size */
-  margin-bottom: 10px; /* Spacing below icon */
+  width: 60px; 
+  margin-bottom: 10px; 
 }
 .weather-detail {
-  font-size: 0.9rem; /* Detail text size */
+  font-size: 0.9rem; 
+}
+
+/* Enhanced Search Bar styles */
+.input-group.custom-search {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.input-group.custom-search .form-control {
+    border-right: 0;
+    border-radius: 5px 0 0 5px;
+}
+
+.input-group.custom-search .input-group-append .btn {
+    border-radius: 0 5px 5px 0;
+    background-color: #007bff; /* Bootstrap primary color */
+    color: white;
+    border: 0;
+    transition: background-color 0.2s ease;
+}
+
+.input-group.custom-search .input-group-append .btn:hover {
+    background-color: #0056b3; /* Darker shade for hover effect */
+}
+
+/* Custom icon for the search button */
+.input-group.custom-search .input-group-append .btn i.fas.fa-search {
+    transition: transform 0.2s ease;
+}
+
+.input-group.custom-search .input-group-append .btn:hover i.fas.fa-search {
+    transform: scale(1.1); /* Slightly enlarge icon on hover */
 }
 
 </style>
@@ -96,19 +126,19 @@ body {
     {% endif %}
     {% endif %}
     {% endwith %}
-    <!-- Search Bar -->
+    <!-- Enhanced Search Bar -->
     <div class="row justify-content-end">
-      <div class="col-lg-4">
-        <form method="POST" class="input-group mb-3">
-          <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
-          <input type="hidden" id="lat" value="{{ lat }}">
-          <input type="hidden" id="lon" value="{{ lon }}">
-          <div class="input-group-append">
-            <button class="btn btn-outline-secondary" type="submit"><i class="fas fa-search"></i></button>
-          </div>
-        </form>
+        <div class="col-lg-4">
+          <form method="POST" class="input-group mb-3 custom-search">
+            <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
+            <input type="hidden" id="lat" value="{{ lat }}">
+            <input type="hidden" id="lon" value="{{ lon }}">
+            <div class="input-group-append">
+              <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
     <!-- Current Weather and Map -->
     <div class="container-fluid mt-4"> 
         <div class="row">
