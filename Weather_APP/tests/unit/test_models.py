@@ -1,5 +1,5 @@
 import pytest
-from website.__init222 import create_app, db
+from website import create_app, db
 from website.models import Member
 from datetime import datetime
 
