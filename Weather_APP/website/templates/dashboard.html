@@ -219,12 +219,19 @@ body {
       </div>
     </div>
   </div>
-  
     <!-- Weather Chart -->
     <div class="card mt-3">
       <div class="card-body">
         <h5 class="card-title">Weather Chart</h5>
-        <canvas id="weatherChart"></canvas> <!-- Chart Placeholder -->
+        <div class="btn-group mb-2" role="group" aria-label="Chart Toggles">
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="temperature">Temperature</button>
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="humidity">Humidity</button>
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="wind">Wind Speed</button>
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="pressure">Pressure</button>
+        </div>
+        <div id="chartContainer" class="chart-section">
+          <img id="weatherChart" src="/temperature-chart" alt="Weather Chart" style="max-width: 100%; height: auto;">
+        </div>
       </div>
     </div>
   </div>
@@ -300,6 +307,15 @@ body {
         if(lat && lon) {
             updateMapView(lat, lon);
         }
+    });
+
+    //Chart Toggle
+    document.querySelectorAll('.chart-toggle').forEach(button => {
+      button.addEventListener('click', function() {
+        var chartType = this.getAttribute('data-chart');
+        var chartSrc = '/' + chartType + '-chart'; // Construct the URL for the chart image
+        document.getElementById('weatherChart').src = chartSrc; // Update the chart image source
+      });
     });
     </script>   
 {% endblock %}
