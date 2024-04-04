@@ -8,7 +8,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -23,10 +22,16 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install flake8 pytest
-        if [ -f requirements.txt ]; then python3 -m pip install -r requirements.txt; fi
-  
-    - name: Test with pytest
+        python -m pip install --upgrade pip
+        python -m pip install flake8 pytest
+        if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+    - name: Test with pytest and coverage
       run: |
-        pytest tests
+        pytest tests --cov=src --cov-report=term-missing
+    - name: Cache Python packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-python-${{ matrix.python-version }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-python-${{ matrix.python-version }}-pip-
