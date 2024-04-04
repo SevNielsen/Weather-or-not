@@ -226,11 +226,12 @@ body {
         <div class="btn-group mb-2" role="group" aria-label="Chart Toggles">
           <button type="button" class="btn btn-secondary chart-toggle" data-chart="temperature">Temperature</button>
           <button type="button" class="btn btn-secondary chart-toggle" data-chart="humidity">Humidity</button>
-          <button type="button" class="btn btn-secondary chart-toggle" data-chart="wind">Wind Speed</button>
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="wind_speed">Wind Speed</button>
           <button type="button" class="btn btn-secondary chart-toggle" data-chart="pressure">Pressure</button>
+          <button type="button" class="btn btn-secondary chart-toggle" data-chart="comparison">Comparison</button>
         </div>
         <div id="chartContainer" class="chart-section">
-          <img id="weatherChart" src="/temperature-chart" alt="Weather Chart" style="max-width: 100%; height: auto;">
+          <img id="weatherChart" src="Weather_APP/website/static/charts/temperature_chart.png" alt="Weather Chart" style="max-width: 100%; height: auto;">
         </div>
       </div>
     </div>
@@ -313,7 +314,7 @@ body {
     document.querySelectorAll('.chart-toggle').forEach(button => {
       button.addEventListener('click', function() {
         var chartType = this.getAttribute('data-chart');
-        var chartSrc = '/' + chartType + '-chart'; // Construct the URL for the chart image
+        var chartSrc = '{{ url_for("static", filename="charts/") }}' + chartType + '_chart.png'; // Use Flask url_for to construct the URL
         document.getElementById('weatherChart').src = chartSrc; // Update the chart image source
       });
     });

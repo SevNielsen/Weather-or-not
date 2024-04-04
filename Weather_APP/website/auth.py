@@ -9,7 +9,12 @@ import requests
 from datetime import datetime
 import calendar
 import collections
-from .weather_utils import fetch_forecast_data, fetch_current_weather_data, process_forecast_data, fetch_coordinates
+from .weather_utils import (
+    fetch_current_weather_data, fetch_coordinates,
+    fetch_forecast_data, process_forecast_data,
+    create_temperature_chart, create_humidity_chart,
+    create_wind_speed_chart, create_pressure_chart,
+    create_comparison_chart )
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
@@ -100,8 +105,16 @@ def dashboard():
         forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
         if forecast_json:
             forecasts = process_forecast_data(forecast_json)
+            create_temperature_chart(forecasts, 'Weather_APP/website/static/charts/temperature_chart.png')
+            create_humidity_chart(forecasts, 'Weather_APP/website/static/charts/humidity_chart.png')
+            create_wind_speed_chart(forecasts, 'Weather_APP/website/static/charts/wind_speed_chart.png')
+            create_pressure_chart(forecasts, 'Weather_APP/website/static/charts/pressure_chart.png')
+            create_comparison_chart(forecasts, 'Weather_APP/website/static/charts/comparison_chart.png')
     return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
    
+
+
+
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():

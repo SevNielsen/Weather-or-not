@@ -6,7 +6,10 @@ import os
 import requests
 from flask import flash
 from dotenv import load_dotenv
+import matplotlib
+matplotlib.use('Agg') 
 import matplotlib.pyplot as plt
+
 
 def fetch_coordinates(city):
     load_dotenv()
@@ -125,7 +128,7 @@ def weekday_from_date(year, month, day):
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
 
-def create_temperature_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/temprature_chart.png'):
+def create_temperature_chart(processed_forecasts, chart_path='Weather_APP/website/static/charts/temperature_chart.png'):
     """Generate a temperature chart for the processed forecast data."""
     days = [forecast['date'] for forecast in processed_forecasts]
     max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
