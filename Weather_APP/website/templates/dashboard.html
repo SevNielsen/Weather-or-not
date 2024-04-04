@@ -190,35 +190,34 @@ body {
           </div>
         </div>
       </div>
-   <!-- 5 Day Forecast -->
-   <div class="card mt-3">
-    <div class="card-body">
-      <h5 class="card-title text-center">5 Day Forecast</h5>
-      <div class="row">
-        {% for forecast in forecasts %}
-        <!-- Adjusted to use col-sm-6 for small devices and col-md-2 for medium to large devices, adding col-lg for larger screens -->
-        <div class="col-sm-6 col-md-2 col-lg mb-3 px-md-2">
-          <div class="card custom-card2 h-100">
-            <div class="card-body">
-              <h6 class="card-title">{{ forecast['date'] }}</h6>
-              <img src="{{ forecast['icon'] }}" alt="Weather Icon" class="weather-icon mx-auto d-block">
-              <p class="card-text">
-                {{ forecast['max_temp'] }}° / {{ forecast['min_temp'] }}°<br>
-                <small class="text-muted">{{ forecast['description'] }}</small>
-              </p>
-              <p class="weather-detail">
-                Humidity: {{ forecast['humidity'] }}%<br>
-                Pressure: {{ forecast['pressure'] }} hPa<br>
-                Wind: {{ forecast['wind_speed'] }} m/s<br>
-                Direction: {{ forecast['wind_deg'] }}°
-              </p>
-            </div>
+  <!-- 5 Day Forecast -->
+<div class="card mt-3">
+  <div class="card-body">
+    <h5 class="card-title text-center">5 Day Forecast</h5>
+    <div class="row">
+      {% for forecast in forecasts %}
+      <div class="col-12 col-sm-6 col-md-4 col-xl mb-3 px-md-2">
+        <div class="card custom-card2 h-100">
+          <div class="card-body">
+            <h6 class="card-title">{{ forecast['date'] }}</h6>
+            <img src="{{ forecast['icon'] }}" alt="Weather Icon" class="weather-icon mx-auto d-block">
+            <p class="card-text">
+              {{ forecast['max_temp'] }}° / {{ forecast['min_temp'] }}°<br>
+              <small class="text-muted">{{ forecast['description'] }}</small>
+            </p>
+            <p class="weather-detail">
+              Humidity: {{ forecast['humidity'] }}%<br>
+              Pressure: {{ forecast['pressure'] }} hPa<br>
+              Wind: {{ forecast['wind_speed'] }} m/s<br>
+              Direction: {{ forecast['wind_deg'] }}°
+            </p>
           </div>
         </div>
-        {% endfor %}
       </div>
+      {% endfor %}
     </div>
   </div>
+</div>
 <!-- Enhanced Weather Chart with Bootstrap -->
 <div class="card mt-3 shadow-sm"> 
   <div class="card-header">
@@ -241,7 +240,6 @@ body {
     Updated just now
   </div>
 </div>
-
   <!-- jQuery first, then Popper.js, then Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
