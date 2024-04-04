@@ -9,7 +9,7 @@ import requests
 from datetime import datetime
 import calendar
 import collections
-from .weather_utils import weekday_from_date, fetch_weather_data, fetch_map_data, fetch_coordinates
+from .weather_utils import fetch_forecast_data, fetch_current_weather_data, process_forecast_data, fetch_coordinates
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
@@ -84,38 +84,31 @@ def sign_up():
 
     return render_template("signup.html", logged_in = current_user)
 
-@auth.route('/dashboard', methods = ['GET','POST'])
+@auth.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     if request.method == 'POST':
-        # Extract city from form data
         city = request.form.get('city')
     else:
-        # Use the user's default city or a predefined default
         city = current_user.city
-    # Fetch Weather data from weather_utils api connection method
-    '''
-    weather_response, forecast_response = fetch_weather_data(city)
-    if not weather_response or not forecast_response:
-        return render_template("dashboard.html", logged_in=current_user.is_authenticated)
-    #Parse Data for current weather
-    current_weather = {
-        'icon': f"https://openweathermap.org/img/wn/{weather_response['weather'][0]['icon']}@2x.png",
-        'temperature': weather_response['main']['temp'],
-        'feels_like': weather_response['main']['feels_like'],
-        'temp_min': weather_response['main']['temp_min'],
-        'temp_max': weather_response['main']['temp_max'],
-        'humidity': weather_response['main']['humidity'],
-        'city': weather_response['name'],
-        'sunrise': datetime.fromtimestamp(weather_response['sys']['sunrise']).strftime('%H:%M'),
-        'sunset': datetime.fromtimestamp(weather_response['sys']['sunset']).strftime('%H:%M'),
-    }
-    '''
-    load_dotenv()
+
+    # Fetch the current weather data for the city
+    current_weather = fetch_current_weather_data(city)
+
+    # Initialize forecasts to None in case the following logic fails to fetch or process forecast data
+    forecasts = None
     
-    apikey = os.getenv('API_KEY')
+    # Proceed to fetch and process forecast data if coordinates are successfully fetched
+    lat, lon = fetch_coordinates(city)
+    if lat is not None and lon is not None:
+        forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
+        if forecast_json:
+            forecasts = process_forecast_data(forecast_json)
+
+    # Return the dashboard template with all the necessary data
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city)
+    '''
     url = 'https://api.openweathermap.org/data/2.5/weather?q={}&appid={}&units=metric'.format(city, apikey)
-    #'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={api_key}&units=metric'
     req = requests.get(url).json()
     lon, lat = req['coord'].get('lon'), req['coord'].get('lat')
 
@@ -144,18 +137,9 @@ def dashboard():
             else:
                 ha = ha + 1
                 listof1.append([int(i.get('main').get('temp_max')), int(i.get('main').get('temp_min')), i.get('weather')[0].get('description'), temp, 'https://openweathermap.org/img/wn/{}@2x.png'.format(i.get('weather')[0].get('icon'))])    
-   
-   
-    #layer = "temp_new"  
-    #zoom = 10  
-    #map_url = fetch_map_data(layer, city, zoom) 
+
     return render_template("dashboard.html",logged_in=current_user,listof = listof1,username = current_user.username,cit2 = city)
-        #current_weather=current_weather,
-        #forecast=sorted_forecast,
-
-        #map_url=map_url
-    
-
+'''
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
