@@ -5,10 +5,6 @@ from . import db
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
-import requests
-from datetime import datetime
-import calendar
-import collections
 from .weather_utils import (
     fetch_current_weather_data, fetch_coordinates,
     fetch_forecast_data, process_forecast_data,
