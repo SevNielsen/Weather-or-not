@@ -9,7 +9,6 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-
 def fetch_coordinates(city):
     load_dotenv()
     api_key = os.getenv('API_KEY')
@@ -221,5 +220,3 @@ def create_comparison_chart(processed_forecasts, chart_path='Weather_APP/website
     ax1.legend(lines + lines2 + lines3, labels + labels2 + labels3, loc='best', fontsize=FONT_SIZE)
 
     save_chart(chart_path)
-
-

@@ -1,7 +1,6 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from .models import Member
+from .models import Member, WeatherPreference, db
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db 
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -109,8 +108,6 @@ def dashboard():
     return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
    
 
-
-
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
@@ -148,3 +145,36 @@ def config():
         # Return a json with error message if API key is not found
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
+
+@auth.route('/preferences', methods=['GET', 'POST'])
+@login_required
+def preferences():
+    if request.method == 'POST':
+        # Extract data from form
+        temp_threshold = request.form.get('temp_threshold')
+        temp_condition = request.form.get('temp_condition')
+        wind_speed_threshold = request.form.get('wind_speed_threshold')
+        wind_speed_condition = request.form.get('wind_speed_condition')
+        weather_condition = request.form.get('weather_condition')
+        
+        # Find existing preferences or create new if not exist
+        preferences = WeatherPreference.query.filter_by(member_id=current_user.id).first()
+        if not preferences:
+            preferences = WeatherPreference(member_id=current_user.id)
+            db.session.add(preferences)
+        
+        # Update preferences
+        preferences.temp_threshold = temp_threshold
+        preferences.temp_condition = temp_condition
+        preferences.wind_speed_threshold = wind_speed_threshold
+        preferences.wind_speed_condition = wind_speed_condition
+        preferences.weather_condition = weather_condition
+
+        db.session.commit()
+        flash('Your weather preferences have been updated.', 'success')
+        
+    else:
+        # On GET request, just render the page, form will be populated via template logic
+        preferences = WeatherPreference.query.filter_by(member_id=current_user.id).first()
+
+    return render_template('preferences.html', preferences=preferences)
