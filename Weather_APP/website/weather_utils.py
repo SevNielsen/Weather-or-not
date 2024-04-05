@@ -146,6 +146,12 @@ def create_chart_base(title, x_label, y_label, figsize=FIG_SIZE):
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
 def save_chart(chart_path):
+    # Ensure the directory for the chart exists
+    directory = os.path.dirname(chart_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    # Now save the chart as before
     plt.savefig(chart_path, bbox_inches='tight')
     plt.close()
 
