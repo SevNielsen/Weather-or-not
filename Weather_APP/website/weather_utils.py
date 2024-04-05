@@ -1,13 +1,12 @@
 import calendar
 import datetime
-from datetime import datetime
-from datetime import date
+from datetime import datetime, date
 import os
 import requests
 from flask import flash
 from dotenv import load_dotenv
 import matplotlib
-matplotlib.use('Agg') 
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 
@@ -127,19 +126,6 @@ def weekday_from_date(year, month, day):
     except ValueError as e:
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
-
-import calendar
-import datetime
-from datetime import datetime, date
-import os
-import requests
-from flask import flash
-from dotenv import load_dotenv
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-# Existing functions (fetch_coordinates, fetch_map_data, fetch_current_weather_data, fetch_forecast_data, process_forecast_data, weekday_from_date) remain unchanged.
 
 # Constants for design
 FIG_SIZE = (8, 5)
