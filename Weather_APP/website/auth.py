@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from .models import Member
+from .models import Member,Visit, Config
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db 
+from . import db, auth
+from sqlalchemy import func
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -56,6 +57,12 @@ def logout():
 
 @auth.route('/signup', methods = ['GET','POST'])
 def sign_up():
+    #Check if user registration is allowed
+    config = Config.query.filter_by(key='allow_registration').first()
+    if not config or config.value != 'true':
+        flash('Registration is currently disabled.', 'error')
+        return redirect(url_for('auth.login'))
+    
     # Handle POST request to process signup form submission
     if request.method == 'POST':
         # Collect from data
@@ -152,3 +159,83 @@ def config():
         # Return a json with error message if API key is not found
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
+
+
+
+
+@auth.route('/admin', methods=['GET'])
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Access denied for non-admin users.', 'error')
+        return redirect(url_for('auth.login'))  #
+    # Specific data loading and processing logic for administrators
+    return render_template('admin_dashboard.html', logged_in=current_user.is_authenticated)
+
+@auth.route('/update_role/<int:user_id>', methods=['POST'])
+@login_required
+def update_role(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(user_id)
+    if user:
+        user.is_admin = request.form.get('is_admin') == 'on'
+        db.session.commit()
+        flash('User role updated successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+
+@auth.route('/admin/dashboard', methods=['GET', 'POST'])
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Access restricted to administrators only.', 'error')
+        return redirect(url_for('main.index'))
+
+    if request.method == 'POST':
+        # 处理网站配置更新
+        allow_registration = 'true' if request.form.get('allow_registration') else 'false'
+        config = Config.query.filter_by(key='allow_registration').first()
+        if config:
+            config.value = allow_registration
+        else:
+            db.session.add(Config(key='allow_registration', value=allow_registration))
+        db.session.commit()
+        flash('Configuration updated successfully.', 'success')
+        return redirect(url_for('admin_dashboard'))
+
+    users = Member.query.all()
+    config = Config.query.filter_by(key='allow_registration').first()
+    allow_registration = config.value if config else 'false'
+    total_users = Member.query.count()
+    # 假设 total_visits 是通过其他逻辑计算得到
+    total_visits = "Not Implemented"  # 这里需要根据实际情况实现
+
+    return render_template('admin_dashboard.html', 
+                           users=users, 
+                           allow_registration=allow_registration == 'true', 
+                           total_visits=total_visits, 
+                           total_users=total_users)
+

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    
+    <!-- Website Configuration Section -->
+    <section>
+        <h2>Modify Website Configuration</h2>
+        <form method="POST" action="{{ url_for('auth.save_config') }}">
+            <label for="allow_registration">Allow New User Registration:</label>
+            <input type="checkbox" id="allow_registration" name="allow_registration" {{ 'checked' if allow_registration else '' }}>
+            <button type="submit">Save Settings</button>
+        </form>
+    </section>
+    
+    <!-- User Management Section -->
+    <section>
+        <h2>User Management</h2>
+        <table border="1">
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+            {% for user in users %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        <form action="{{ url_for('auth.update_role', user_id=user.id) }}" method="post">
+                            <input type="hidden" name="username" value="{{ user.username }}">
+                            <input type="checkbox" name="is_admin" {{ 'checked' if user.is_admin else '' }}> Administrator
+                            <button type="submit">Update Role</button>
+                        </form>
+                        <form action="{{ url_for('auth.delete_user', user_id=user.id) }}" method="post">
+                            <button type="submit" onclick="return confirm('Are you sure?');">Delete User</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </section>
+    
+    <!-- Website Statistics Section -->
+    <section>
+        <h2>Website Statistics</h2>
+        <p>Total Visits: {{ total_visits }}</p>
+        <p>Total Registered Users: {{ total_users }}</p>
+    </section>
+</body>
+</html>
