@@ -78,12 +78,6 @@ def sign_up():
         flash('Registration is currently disabled.', 'error')
         return redirect(url_for('auth.login'))
     
-    #Check if user registration is allowed
-    config = Config.query.filter_by(key='allow_registration').first()
-    if not config or config.value != 'true':
-        flash('Registration is currently disabled.', 'error')
-        return redirect(url_for('auth.login'))
-    
     # Handle POST request to process signup form submission
     if request.method == 'POST':
         # Collect from data
@@ -180,6 +174,7 @@ def config():
         # Return a json with error message if API key is not found
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
+     
 
 @auth.route('/update_role/<int:user_id>', methods=['POST'])
 @login_required
@@ -188,11 +183,22 @@ def update_role(user_id):
         flash('Only admins can perform this action.', 'error')
         return redirect(url_for('auth.login'))
 
+    if current_user.id == user_id:
+        # Check if attempting to change the role of the current admin user
+
+        flash("Administrators cannot change their own admin status.", 'error')
+        return redirect(url_for('auth.admin_dashboard'))
+
     user = Member.query.get(user_id)
     if user:
-        user.is_admin = request.form.get('is_admin') == 'on'
-        db.session.commit()
-        flash('User role updated successfully.', 'success')
+        new_role_is_admin = request.form.get('is_admin') == 'on'
+        if user.is_admin and not new_role_is_admin and user_id == current_user.id:
+         # Prevent administrators from setting themselves as non-administrators
+            flash("Administrators cannot remove their own administrator privileges.", 'error')
+        else:
+            user.is_admin = new_role_is_admin
+            db.session.commit()
+            flash('User role updated successfully.', 'success')
     else:
         flash('User not found.', 'error')
 
