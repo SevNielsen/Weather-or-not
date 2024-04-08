@@ -41,8 +41,10 @@
         
         <!-- Website Configuration Section -->
         <section class="dashboard-section">
+            <!-- Paste the provided content for Modify Website Configuration here -->
             <h2>Modify Website Configuration</h2>
-            <form method="POST" action="{{ url_for('auth.save_config') }}">
+{#            <form method="POST" action="{{ url_for('auth.config') }}">#}
+            <form method="POST">
                 <div class="form-group form-check">
                     <input type="checkbox" class="form-check-input" id="allow_registration" name="allow_registration" {{ 'checked' if allow_registration else '' }}>
                     <label class="form-check-label" for="allow_registration">Allow New User Registration:</label>
