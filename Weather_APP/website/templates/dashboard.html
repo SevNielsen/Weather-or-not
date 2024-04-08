@@ -126,6 +126,11 @@ body {
     {% endif %}
     {% endif %}
     {% endwith %}
+    
+    {% if current_user.is_admin %}
+    <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-warning">Admin Dashboard</a>
+{% endif %}
+
     <!-- Enhanced Search Bar -->
     <div class="row justify-content-end">
         <div class="col-lg-4">
@@ -139,9 +144,11 @@ body {
           </form>
         </div>
       </div>
+      
     <!-- Current Weather and Map -->
     <div class="container-fluid mt-4"> 
         <div class="row">
+          
           <!-- Current Weather Column -->
           <div class="col-lg-4">
             <div class="card text-center">
