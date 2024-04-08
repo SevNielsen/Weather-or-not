@@ -246,3 +246,26 @@ def admin_dashboard():
                            total_visits=total_visits, 
                            total_users=total_users)
 
+@auth.route('/admin/login', methods=['GET', 'POST'])  # change from login2 --> login
+def admin_login():
+    # Handle POST request to process login form submission
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password2')  ## Sam Jeon mr.perfecto183@gmail.com sammy ipad
+        member = Member.query.filter_by(username=username, is_admin=1).first()
+        if member:
+            if check_password_hash(member.password, password):
+                login_user(member, remember=True)
+                # flash("Successfully Lo", category='success')
+                return redirect(url_for('auth.admin_dashboard'))
+                # return redirect(url_for('auth.dashboard'))
+            else:
+                flash("Incorrect Password", category='error')
+                # return redirect(url_for('auth.login'))
+
+        else:
+            # Flash error message if login details are incorrect
+            flash("Incorrect username or password", category='error')
+
+    return render_template("admin_login.html", logged_in=current_user)
+
