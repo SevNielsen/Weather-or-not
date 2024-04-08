@@ -1,7 +1,8 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from .models import Member
+from .models import Member,Visit, Config,db
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db 
+from . import db, auth
+from sqlalchemy import func
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -18,6 +19,19 @@ from .weather_utils import (
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
+@auth.before_app_request
+def record_visit():
+    # Filter out requests for static resources
+    if "static" in request.endpoint:
+        return
+    today = datetime.utcnow().date()
+    visit = Visit.query.filter_by(date=today).first()
+    if visit:
+        visit.count += 1
+    else:
+        visit = Visit(date=today, count=1)
+        db.session.add(visit)
+    db.session.commit()
 
 @auth.route('/')
 def home():
@@ -56,6 +70,12 @@ def logout():
 
 @auth.route('/signup', methods = ['GET','POST'])
 def sign_up():
+    #Check if user registration is allowed
+    config = Config.query.filter_by(key='allow_registration').first()
+    if not config or config.value != 'true':
+        flash('Registration is currently disabled.', 'error')
+        return redirect(url_for('auth.login'))
+    
     # Handle POST request to process signup form submission
     if request.method == 'POST':
         # Collect from data
@@ -152,3 +172,69 @@ def config():
         # Return a json with error message if API key is not found
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
+
+@auth.route('/update_role/<int:user_id>', methods=['POST'])
+@login_required
+def update_role(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(user_id)
+    if user:
+        user.is_admin = request.form.get('is_admin') == 'on'
+        db.session.commit()
+        flash('User role updated successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth.route('/admin/dashboard', methods=['GET', 'POST'])
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Access restricted to administrators only.', 'error')
+        return redirect(url_for('main.index'))
+
+    if request.method == 'POST':
+        # Handle website configuration update
+        allow_registration = 'true' if request.form.get('allow_registration') else 'false'
+        config = Config.query.filter_by(key='allow_registration').first()
+        if config:
+            config.value = allow_registration
+        else:
+            db.session.add(Config(key='allow_registration', value=allow_registration))
+        db.session.commit()
+        flash('Configuration updated successfully.', 'success')
+        return redirect(url_for('auth.admin_dashboard'))
+
+    users = Member.query.all()
+    config = Config.query.filter_by(key='allow_registration').first()
+    allow_registration = config.value if config else 'false'
+    total_users = Member.query.count()
+    total_visits = Visit.query.count()  # Obtaining total visits
+
+    return render_template('admin_dashboard.html', 
+                           users=users, 
+                           allow_registration=allow_registration == 'true', 
+                           total_visits=total_visits, 
+                           total_users=total_users)
+

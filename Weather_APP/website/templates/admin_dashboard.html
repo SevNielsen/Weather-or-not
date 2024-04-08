@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard</title>
+    <!-- Bootstrap CSS for responsive design -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            margin-top: 20px;
+        }
+        .dashboard-section {
+            background: #ffffff;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .dashboard-section h2 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        table {
+            margin-top: 20px;
+        }
+        table th, table td {
+            text-align: center;
+        }
+        .form-check-input {
+            margin-top: 0.3em;
+        }
+        .btn {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="my-4">Admin Dashboard</h1>
+        
+        <!-- Website Configuration Section -->
+        <section class="dashboard-section">
+            <h2>Modify Website Configuration</h2>
+            <form method="POST" action="{{ url_for('auth.save_config') }}">
+                <div class="form-group form-check">
+                    <input type="checkbox" class="form-check-input" id="allow_registration" name="allow_registration" {{ 'checked' if allow_registration else '' }}>
+                    <label class="form-check-label" for="allow_registration">Allow New User Registration:</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Settings</button>
+            </form>
+        </section>
+        
+        <!-- User Management Section -->
+        <section class="dashboard-section">
+            <h2>User Management</h2>
+            <table class="table">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                <form action="{{ url_for('auth.update_role', user_id=user.id) }}" method="post" class="d-inline-block">
+                                    <input type="hidden" name="username" value="{{ user.username }}">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="checkbox" name="is_admin" {{ 'checked' if user.is_admin else '' }}>
+                                        <label class="form-check-label" for="is_admin">Administrator</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-info">Update Role</button>
+                                </form>
+                                <form action="{{ url_for('auth.delete_user', user_id=user.id) }}" method="post" class="d-inline-block">
+                                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?');">Delete User</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        
+        <!-- Website Statistics Section -->
+        <section class="dashboard-section">
+            <h2>Website Statistics</h2>
+            <p>Total Visits: {{ total_visits }}</p>
+            <p>Total Registered Users: {{ total_users }}</p>
+        </section>
+    </div>
+
+    <!-- Bootstrap JS for interactivity -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+</html>
