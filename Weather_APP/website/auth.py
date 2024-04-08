@@ -24,7 +24,7 @@ auth = Blueprint('auth', __name__)
 @auth.before_app_request
 def record_visit():
     # Filter out requests for static resources
-    if "static" in request.endpoint:
+    if request.endpoint and "static" in request.endpoint:
         return
     today = datetime.utcnow().date()
     visit = Visit.query.filter_by(date=today).first()
