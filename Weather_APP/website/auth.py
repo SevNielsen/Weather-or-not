@@ -3,6 +3,8 @@ from .models import Member,Visit, Config,db
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db, auth
 from sqlalchemy import func
+from . import db, auth
+from sqlalchemy import func
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
@@ -70,6 +72,12 @@ def logout():
 
 @auth.route('/signup', methods = ['GET','POST'])
 def sign_up():
+    #Check if user registration is allowed
+    config = Config.query.filter_by(key='allow_registration').first()
+    if not config or config.value != 'true':
+        flash('Registration is currently disabled.', 'error')
+        return redirect(url_for('auth.login'))
+    
     #Check if user registration is allowed
     config = Config.query.filter_by(key='allow_registration').first()
     if not config or config.value != 'true':
