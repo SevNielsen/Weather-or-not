@@ -7,6 +7,7 @@ class Member(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True) 
     password = db.Column(db.String(255)) 
+    phone_number = db.Column(db.String(20))
     email = db.Column(db.String(150), unique=True) 
     city = db.Column(db.String(50))
     notifications = db.Column(db.Boolean, default=False)

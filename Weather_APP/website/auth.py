@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import os
 import requests
 from datetime import datetime
+from twilio.rest import Client
 import calendar
 import collections
 from .weather_utils import (
@@ -18,8 +19,19 @@ from .weather_utils import (
     create_temperature_chart, create_humidity_chart,
     create_wind_speed_chart, create_pressure_chart,
     create_comparison_chart )
+
+
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
+
+
+# Twilio Configuration
+account_sid = 'YOUR_TWILIO_ACCOUNT_SID'
+auth_token = 'YOUR_TWILIO_AUTH_TOKEN'
+twilio_phone_number = 'YOUR_TWILIO_PHONE_NUMBER'
+
+client = Client(account_sid, auth_token)
+
 
 @auth.before_app_request
 def record_visit():
@@ -275,3 +287,27 @@ def admin_login():
 
     return render_template("admin_login.html", logged_in=current_user)
 
+@auth.route('/update_notifications/<int:user_id>', methods=['POST'])
+def update_notifications(user_id):
+    user = Member.query.get(user_id)
+    if user:
+        # Update user notification settings
+        user.notifications = bool(request.form.get('notifications', False))
+        db.session.commit()
+
+        # If user opts to receive notifications, send a text message
+        if user.notifications:
+            send_sms(user.phone_number, "Your application notifications have been updated.")
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+def send_sms(phone_number, message):
+    try:
+        client.messages.create(
+            to=phone_number,
+            from_=twilio_phone_number,
+            body=message
+        )
+        print("SMS notification sent to", phone_number)
+    except Exception as e:
+        print("Error sending SMS notification:", e)
