@@ -1,0 +1,12 @@
+<!-- preferences.html -->
+<form action="{{ url_for('auth.preferences') }}" method="POST">
+    <!-- Temperature Threshold -->
+    <div>
+        <label for="temp_threshold">Temperature Threshold</label>
+        <input type="number" name="temp_threshold" id="temp_threshold" value="{{ preferences.temp_threshold if preferences else '' }}">
+    </div>
+
+    <!-- Additional fields for wind speed, weather condition, etc. -->
+
+    <button type="submit">Save Preferences</button>
+</form>
