@@ -264,11 +264,11 @@ body {
             var apiKey = config.apiKey;
             var currentLayer = null;
             var layers = {
-            temp: L.OWM.temperature({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
-            pressure: L.OWM.pressure({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
-            wind: L.OWM.wind({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
-            clouds: L.OWM.clouds({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
-            precip: L.OWM.precipitation({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'})
+            temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
+            pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
+            wind: L.OWM.wind({appId: apiKey, showLegend: true}),
+            clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
+            precip: L.OWM.precipitation({appId: apiKey, showLegend: true})
             };
 
             var controlPanel = L.control({position: 'topright'});
