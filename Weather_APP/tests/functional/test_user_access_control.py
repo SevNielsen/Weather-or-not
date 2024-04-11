@@ -42,5 +42,27 @@ def test_admin_access(client, init_database):
         
         response = client.post('/login', data=dict(username='admin_user', password='password'), follow_redirects=True)
         assert current_user.is_admin is True
-        response = client.get('/admin_page')
+        response = client.get('/admin_dashboard')
         assert response.status_code == 200  
+
+def test_normal_user_cannot_access_admin_page(client, init_database):
+    # Log in with a normal user
+    response = client.post('/login', data={'username': 'normal_user', 'password': 'password'}, follow_redirects=True)
+    assert b'Welcome' in response.data  # Assuming a successful login will display "Welcome" on the page
+
+    # Try to access the admin page
+    response = client.get('/admin_dashboard', follow_redirects=True)
+    assert response.status_code == 403  # Assuming non-admin users attempting to access the admin page will receive a 403 error
+    assert b'Access denied' in response.data  # Assuming the page will display "Access denied"
+
+
+def test_access_dashboard_post_logout(client, init_database):
+    # User logs in
+    client.post('/login', data={'username': 'normal_user', 'password': 'password'}, follow_redirects=True)
+
+    # User logs out
+    client.get('/logout', follow_redirects=True)
+
+    # Attempt to access the dashboard page
+    response = client.get('/dashboard', follow_redirects=True)
+    assert b'Please log in' in response.data

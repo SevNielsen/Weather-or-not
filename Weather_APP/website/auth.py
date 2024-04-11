@@ -1,19 +1,51 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify
-from .models import Member
+from .models import Member,Visit, Config,db
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import db 
+from . import db, auth
+from sqlalchemy import func
+from . import db, auth
+from sqlalchemy import func
 from flask_login import login_user, login_required, logout_user, current_user
 from dotenv import load_dotenv
 import os
+import requests
+from datetime import datetime
+from twilio.rest import Client
+import calendar
+import collections
 from .weather_utils import (
     fetch_current_weather_data, fetch_coordinates,
     fetch_forecast_data, process_forecast_data,
     create_temperature_chart, create_humidity_chart,
     create_wind_speed_chart, create_pressure_chart,
     create_comparison_chart )
+
+
 # Initialize the Blueprint for authentication routes
 auth = Blueprint('auth', __name__)
 
+
+# Twilio Configuration
+account_sid = 'YOUR_TWILIO_ACCOUNT_SID'
+auth_token = 'YOUR_TWILIO_AUTH_TOKEN'
+twilio_phone_number = 'YOUR_TWILIO_PHONE_NUMBER'
+
+client = Client(account_sid, auth_token)
+
+
+@auth.before_app_request
+def record_visit():
+    # Filter out requests for static resources
+    if request.endpoint and "static" in request.endpoint:
+        return
+    today = datetime.utcnow().date()
+    visit = Visit.query.filter_by(date=today).first()
+    if visit:
+        visit.count += 1
+    else:
+        visit = Visit(date=today, count=1)
+        db.session.add(visit)
+    db.session.commit()
 
 @auth.route('/')
 def home():
@@ -52,6 +84,12 @@ def logout():
 
 @auth.route('/signup', methods = ['GET','POST'])
 def sign_up():
+    #Check if user registration is allowed
+    config = Config.query.filter_by(key='allow_registration').first()
+    if not config or config.value != 'true':
+        flash('Registration is currently disabled.', 'error')
+        return redirect(url_for('auth.login'))
+    
     # Handle POST request to process signup form submission
     if request.method == 'POST':
         # Collect from data
@@ -148,3 +186,128 @@ def config():
         # Return a json with error message if API key is not found
         return jsonify({"error": "API key is not set"}), 500
     return jsonify(apiKey=api_key)
+     
+
+@auth.route('/update_role/<int:user_id>', methods=['POST'])
+@login_required
+def update_role(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    if current_user.id == user_id:
+        # Check if attempting to change the role of the current admin user
+
+        flash("Administrators cannot change their own admin status.", 'error')
+        return redirect(url_for('auth.admin_dashboard'))
+
+    user = Member.query.get(user_id)
+    if user:
+        new_role_is_admin = request.form.get('is_admin') == 'on'
+        if user.is_admin and not new_role_is_admin and user_id == current_user.id:
+         # Prevent administrators from setting themselves as non-administrators
+            flash("Administrators cannot remove their own administrator privileges.", 'error')
+        else:
+            user.is_admin = new_role_is_admin
+            db.session.commit()
+            flash('User role updated successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    if not current_user.is_admin:
+        flash('Only admins can perform this action.', 'error')
+        return redirect(url_for('auth.login'))
+
+    user = Member.query.get(user_id)
+    if user:
+        db.session.delete(user)
+        db.session.commit()
+        flash('User deleted successfully.', 'success')
+    else:
+        flash('User not found.', 'error')
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+@auth.route('/admin/dashboard', methods=['GET', 'POST'])
+@login_required
+def admin_dashboard():
+    if not current_user.is_admin:
+        flash('Access restricted to administrators only.', 'error')
+        return redirect(url_for('main.index'))
+
+    if request.method == 'POST':
+        # Handle website configuration update
+        allow_registration = 'true' if request.form.get('allow_registration') else 'false'
+        config = Config.query.filter_by(key='allow_registration').first()
+        if config:
+            config.value = allow_registration
+        else:
+            db.session.add(Config(key='allow_registration', value=allow_registration))
+        db.session.commit()
+        flash('Configuration updated successfully.', 'success')
+        return redirect(url_for('auth.admin_dashboard'))
+
+    users = Member.query.all()
+    config = Config.query.filter_by(key='allow_registration').first()
+    allow_registration = config.value if config else 'false'
+    total_users = Member.query.count()
+    total_visits = Visit.query.count()  # Obtaining total visits
+
+    return render_template('admin_dashboard.html', 
+                           users=users, 
+                           allow_registration=allow_registration == 'true', 
+                           total_visits=total_visits, 
+                           total_users=total_users)
+
+@auth.route('/admin/login', methods=['GET', 'POST'])  # change from login2 --> login
+def admin_login():
+    # Handle POST request to process login form submission
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password2')  ## Sam Jeon mr.perfecto183@gmail.com sammy ipad
+        member = Member.query.filter_by(username=username, is_admin=1).first()
+        if member:
+            if check_password_hash(member.password, password):
+                login_user(member, remember=True)
+                # flash("Successfully Lo", category='success')
+                return redirect(url_for('auth.admin_dashboard'))
+                # return redirect(url_for('auth.dashboard'))
+            else:
+                flash("Incorrect Password", category='error')
+                # return redirect(url_for('auth.login'))
+
+        else:
+            # Flash error message if login details are incorrect
+            flash("Incorrect username or password", category='error')
+
+    return render_template("admin_login.html", logged_in=current_user)
+
+@auth.route('/update_notifications/<int:user_id>', methods=['POST'])
+def update_notifications(user_id):
+    user = Member.query.get(user_id)
+    if user:
+        # Update user notification settings
+        user.notifications = bool(request.form.get('notifications', False))
+        db.session.commit()
+
+        # If user opts to receive notifications, send a text message
+        if user.notifications:
+            send_sms(user.phone_number, "Your application notifications have been updated.")
+
+    return redirect(url_for('auth.admin_dashboard'))
+
+def send_sms(phone_number, message):
+    try:
+        client.messages.create(
+            to=phone_number,
+            from_=twilio_phone_number,
+            body=message
+        )
+        print("SMS notification sent to", phone_number)
+    except Exception as e:
+        print("Error sending SMS notification:", e)
