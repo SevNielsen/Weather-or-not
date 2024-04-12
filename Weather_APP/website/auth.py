@@ -169,7 +169,7 @@ def profile():
             current_user.notifications = False
         db.session.commit()
         flash('Successfully Made Changes to Your Profile',category='success')
-    return render_template("profile.html", logged_in = current_user, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
+    return render_template("profile.html", logged_in = current_user.is_authenticated, username = current_user.username, firstName = current_user.first_name, lastName = current_user.last_name, email = current_user.email, notifications = current_user.notifications, city = current_user.city )
 
 @auth.route('/leafletMap')
 @login_required
