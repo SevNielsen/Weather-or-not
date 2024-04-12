@@ -126,11 +126,6 @@ body {
     {% endif %}
     {% endif %}
     {% endwith %}
-    
-    {% if current_user.is_admin %}
-    <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-warning">Admin Dashboard</a>
-{% endif %}
-
     <!-- Enhanced Search Bar -->
     <div class="row justify-content-end">
         <div class="col-lg-4">
@@ -144,7 +139,18 @@ body {
           </form>
         </div>
       </div>
-      
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var searchForm = document.querySelector('.custom-search');
+            searchForm.addEventListener('submit', function(event) {
+                var searchInput = document.getElementById('search');
+                if (!searchInput.value.trim()) {
+                    event.preventDefault(); // Prevent form from submitting
+                    alert('Please enter a valid city name.');
+                }
+            });
+        });
+        </script>         
     <!-- Current Weather and Map -->
     <div class="container-fluid mt-4"> 
         <div class="row">
