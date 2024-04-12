@@ -146,9 +146,6 @@ def dashboard():
             create_comparison_chart(forecasts, 'website/static/charts/comparison_chart.png')
     return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
    
-
-
-
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
 def profile():
@@ -257,12 +254,19 @@ def admin_dashboard():
     allow_registration = config.value if config else 'false'
     total_users = Member.query.count()
     total_visits = Visit.query.count()  # Obtaining total visits
+    cities = db.session.query(Member.city).filter(Member.city != None).distinct().all()
+    cities = [city[0] for city in cities]  # 提取城市名
 
+    no_cities_available = False  # 标记是否有城市可用
+    if not cities:
+        no_cities_available = True 
     return render_template('admin_dashboard.html', 
                            users=users, 
                            allow_registration=allow_registration == 'true', 
                            total_visits=total_visits, 
-                           total_users=total_users)
+                           total_users=total_users,
+                           cities=cities, 
+                           no_cities_available=no_cities_available)
 
 @auth.route('/admin/login', methods=['GET', 'POST'])  # change from login2 --> login
 def admin_login():
@@ -303,11 +307,71 @@ def update_notifications(user_id):
 
 def send_sms(phone_number, message):
     try:
-        client.messages.create(
+        message = client.messages.create(
             to=phone_number,
             from_=twilio_phone_number,
             body=message
         )
-        print("SMS notification sent to", phone_number)
+        print(f"SMS notification sent to {phone_number}")
+        return True
     except Exception as e:
-        print("Error sending SMS notification:", e)
+        print(f"Error sending SMS notification: {e}")
+        return False
+
+
+@auth.route('/notify_all', methods=['POST'])
+@login_required
+def notify_all():
+    users = Member.query.all()
+    successful_count = 0
+
+    for user in users:
+        if send_sms(user.phone_number, "This is a notification for all users."):
+            successful_count += 1
+
+    if successful_count == len(users):
+        flash('All users have been notified.', 'success')
+    else:
+        flash(f'Notified {successful_count} out of {len(users)} users.', 'warning')
+    
+    return redirect(url_for('auth.admin_dashboard'))
+
+
+@auth.route('/notify_by_city', methods=['POST'])
+@login_required
+def notify_by_city():
+    city = request.form['city']
+    message = request.form['message']
+    users = Member.query.filter_by(city=city).all()
+
+    if not users:
+        flash('No users found in the specified city.', 'error')
+        return redirect(url_for('auth.admin_dashboard'))
+
+    successful_count = 0
+    for user in users:
+        if send_sms(user.phone_number, message):
+            successful_count += 1
+
+    if successful_count == len(users):
+        flash(f'Notification sent to all users in {city}.', 'success')
+    else:
+        flash(f'Notified {successful_count} out of {len(users)} users in {city}.', 'warning')
+    
+    return redirect(url_for('auth.admin_dashboard'))
+
+
+@auth.route('/notify_individual', methods=['POST'])
+@login_required
+def notify_individual():
+    user_id = request.form.get('user_id')
+    message = request.form.get('message')
+    user = Member.query.get(user_id)
+    if user:
+        if send_sms(user.phone_number, message):
+            flash(f'Notification sent successfully to {user.username}.', 'success')
+        else:
+            flash('Failed to send notification.', 'error')
+    else:
+        flash('User not found.', 'error')
+    return redirect(url_for('auth.admin_dashboard'))
