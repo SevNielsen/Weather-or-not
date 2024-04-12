@@ -255,15 +255,9 @@ def admin_dashboard():
     total_users = Member.query.count()
     total_visits = Visit.query.count()  # Obtaining total visits
     cities = db.session.query(Member.city).filter(Member.city != None).distinct().all()
-<<<<<<< HEAD
     cities = [city[0] for city in cities]  
 
     no_cities_available = False 
-=======
-    cities = [city[0] for city in cities]  # 提取城市名
-
-    no_cities_available = False  # 标记是否有城市可用
->>>>>>> 54f61b90ca285b9ff35343ce2aec86593a81bef5
     if not cities:
         no_cities_available = True 
     return render_template('admin_dashboard.html', 
@@ -313,10 +307,7 @@ def update_notifications(user_id):
 
 def send_sms(phone_number, message):
     try:
-<<<<<<< HEAD
         
-=======
->>>>>>> 54f61b90ca285b9ff35343ce2aec86593a81bef5
         message = client.messages.create(
             to=phone_number,
             from_=twilio_phone_number,
