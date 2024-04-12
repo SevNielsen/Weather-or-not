@@ -127,6 +127,116 @@ def weekday_from_date(year, month, day):
         print(f"Invalid date encountered: {e}")
         return "Invalid Date" 
 
+def fetch_air_quality_data(city):
+    lat, lon = fetch_coordinates(city)
+    if lat is None or lon is None:
+        return None
+
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    air_quality_url = f"http://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={api_key}"
+
+    try:
+        response = requests.get(air_quality_url).json()
+        if 'list' in response:
+            data = response['list'][0]
+            air_quality_data = {
+                'aqi': data['main']['aqi'],
+                'co': data['components']['co'],
+                'no': data['components']['no'],
+                'no2': data['components']['no2'],
+                'o3': data['components']['o3'],
+                'so2': data['components']['so2'],
+                'pm2_5': data['components']['pm2_5'],
+                'pm10': data['components']['pm10'],
+                'nh3': data['components']['nh3'],
+                'timestamp': datetime.utcfromtimestamp(data['dt']).strftime('%Y-%m-%d %H:%M:%S')  # Includes timestamp of the data
+            }
+            return air_quality_data
+        else:
+            flash("Error fetching air quality data.", category='error')
+            return None
+    except requests.RequestException as e:
+        flash(f"Failed to connect to air quality service: {e}", category='error')
+        return None
+
+def fetch_forecast_air_quality_data(city):
+    lat, lon = fetch_coordinates(city)
+    if lat is None or lon is None:
+        return None
+
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    forecast_air_quality_url = f"http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat={lat}&lon={lon}&appid={api_key}"
+
+    try:
+        response = requests.get(forecast_air_quality_url).json()
+        if 'list' in response:
+            return response['list']
+        else:
+            flash("Error fetching forecast air quality data.", category='error')
+            return None
+    except requests.RequestException as e:
+        flash(f"Failed to connect to forecast air quality service: {e}", category='error')
+        return None
+
+def process_forecast_air_quality_data(forecast_data):
+    processed_data = []
+    for entry in forecast_data:
+        processed_entry = {
+            'dt': datetime.utcfromtimestamp(entry['dt']).strftime('%Y-%m-%d %H:%M:%S'),
+            'aqi': entry['main']['aqi'],
+            'co': entry['components']['co'],
+            'no': entry['components']['no'],
+            'no2': entry['components']['no2'],
+            'o3': entry['components']['o3'],
+            'so2': entry['components']['so2'],
+            'pm2_5': entry['components']['pm2_5'],
+            'pm10': entry['components']['pm10'],
+            'nh3': entry['components']['nh3'],
+        }
+        processed_data.append(processed_entry)
+    return processed_data
+
+
+def fetch_historical_air_quality_data(city, start_timestamp, end_timestamp):
+    lat, lon = fetch_coordinates(city)
+    if lat is None or lon is None:
+        return None
+
+    load_dotenv()
+    api_key = os.getenv('API_KEY')
+    historical_air_quality_url = f"http://api.openweathermap.org/data/2.5/air_pollution/history?lat={lat}&lon={lon}&start={start_timestamp}&end={end_timestamp}&appid={api_key}"
+
+    try:
+        response = requests.get(historical_air_quality_url).json()
+        if 'list' in response:
+            return response['list']
+        else:
+            flash("Error fetching historical air quality data.", category='error')
+            return None
+    except requests.RequestException as e:
+        flash(f"Failed to connect to historical air quality service: {e}", category='error')
+        return None
+
+def process_historical_air_quality_data(historical_data):
+    processed_data = []
+    for entry in historical_data:
+        processed_entry = {
+            'dt': datetime.utcfromtimestamp(entry['dt']).strftime('%Y-%m-%d %H:%M:%S'),
+            'aqi': entry['main']['aqi'],
+            'co': entry['components']['co'],
+            'no': entry['components']['no'],
+            'no2': entry['components']['no2'],
+            'o3': entry['components']['o3'],
+            'so2': entry['components']['so2'],
+            'pm2_5': entry['components']['pm2_5'],
+            'pm10': entry['components']['pm10'],
+            'nh3': entry['components']['nh3'],
+        }
+        processed_data.append(processed_entry)
+    return processed_data
+
 # Constants for design
 FIG_SIZE = (8, 5)
 FONT_SIZE = 12
