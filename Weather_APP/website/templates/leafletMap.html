@@ -96,7 +96,10 @@
     <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 <script>
-    var map = L.map('map').setView([49.886, -119.496], 13);
+    // Get coordinates passed from Flask
+    var lat = parseFloat("{{ lat }}");
+    var lon = parseFloat("{{ lon }}");
+    var map = L.map('map').setView([lat, lon], 13); // Use dynamic coordinates here with a default zoom level
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'

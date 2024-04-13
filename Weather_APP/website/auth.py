@@ -128,23 +128,57 @@ def sign_up():
 @auth.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
-    if request.method == 'POST':
-        city = request.form.get('city')
-    else:
-        city = current_user.city
-    current_weather = fetch_current_weather_data(city)
+    current_weather = None
     forecasts = None
-    lat, lon = fetch_coordinates(city)
-    if lat is not None and lon is not None:
+    city = current_user.city if current_user.city else 'Default City'
+    chart_paths = {
+        'temperature_chart': None,
+        'humidity_chart': None,
+        'wind_speed_chart': None,
+        'pressure_chart': None,
+        'comparison_chart': None
+    }
+
+    if request.method == 'POST':
+        city = request.form.get('city', '').strip()
+        if not city:
+            flash('Please enter a city name.', 'error')
+            city = current_user.city if current_user.city else 'Default City'
+            return redirect(url_for('auth.dashboard'))
+
+        lat, lon = fetch_coordinates(city)
+        if lat is None or lon is None:
+            flash('Invalid city name. Please try another.', 'error')
+            return redirect(url_for('auth.dashboard'))
+
+        current_weather = fetch_current_weather_data(city)
+        if current_weather is None:
+            flash('Unable to fetch weather for the specified city.', 'error')
+            return redirect(url_for('auth.dashboard'))
+
         forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
         if forecast_json:
             forecasts = process_forecast_data(forecast_json)
-            create_temperature_chart(forecasts, 'website/static/charts/temperature_chart.png')
-            create_humidity_chart(forecasts, 'website/static/charts/humidity_chart.png')
-            create_wind_speed_chart(forecasts, 'website/static/charts/wind_speed_chart.png')
-            create_pressure_chart(forecasts, 'website/static/charts/pressure_chart.png')
-            create_comparison_chart(forecasts, 'website/static/charts/comparison_chart.png')
-    return render_template("dashboard.html", logged_in=current_user.is_authenticated, current_weather=current_weather, forecasts=forecasts, username=current_user.username, city=city, lat=lat, lon=lon)
+            chart_paths['temperature_chart'] = create_temperature_chart(forecasts, 'website/static/charts/temperature_chart.png')
+            chart_paths['humidity_chart'] = create_humidity_chart(forecasts, 'website/static/charts/humidity_chart.png')
+            chart_paths['wind_speed_chart'] = create_wind_speed_chart(forecasts, 'website/static/charts/wind_speed_chart.png')
+            chart_paths['pressure_chart'] = create_pressure_chart(forecasts, 'website/static/charts/pressure_chart.png')
+            chart_paths['comparison_chart'] = create_comparison_chart(forecasts, 'website/static/charts/comparison_chart.png')
+    else:
+        # Use preferred city on initial GET request
+        lat, lon = fetch_coordinates(city)
+        if lat and lon:
+            current_weather = fetch_current_weather_data(city)
+            forecast_json = fetch_forecast_data(lat, lon, os.getenv('API_KEY'))
+            if forecast_json:
+                forecasts = process_forecast_data(forecast_json)
+                # Update chart paths as above
+
+    return render_template("dashboard.html", logged_in=current_user.is_authenticated, 
+                           current_weather=current_weather, forecasts=forecasts, 
+                           chart_paths=chart_paths, username=current_user.username, city=city, lat=lat, lon=lon)
+
+
    
 @auth.route('/profile', methods = ['GET','POST'])
 @login_required
@@ -174,7 +208,17 @@ def profile():
 @auth.route('/leafletMap')
 @login_required
 def showMap():
-    return render_template('leafletMap.html', logged_in=current_user.is_authenticated)
+    default_lat, default_lon = 49.886, -119.496  #Kelowna
+    city = current_user.city if current_user.city else None
+    if city:
+        lat, lon = fetch_coordinates(city)
+        if lat is None or lon is None: 
+            lat, lon = default_lat, default_lon
+    else:
+        lat, lon = default_lat, default_lon
+
+    return render_template('leafletMap.html', logged_in=current_user.is_authenticated, lat=lat, lon=lon)
+
 
 @auth.route('/config')
 def config():
