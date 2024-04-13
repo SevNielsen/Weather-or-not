@@ -116,87 +116,96 @@ body {
     <!-- Alerts for messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    {% if messages[0][0] == 'created_account' %}
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ messages[0][1] }}
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    {% endif %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
     {% endif %}
     {% endwith %}
-    
-    {% if current_user.is_admin %}
-    <a href="{{ url_for('auth.admin_dashboard') }}" class="btn btn-warning">Admin Dashboard</a>
-{% endif %}
-
     <!-- Enhanced Search Bar -->
     <div class="row justify-content-end">
-        <div class="col-lg-4">
+      <div class="col-lg-4">
           <form method="POST" class="input-group mb-3 custom-search">
-            <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
-            <input type="hidden" id="lat" value="{{ lat }}">
-            <input type="hidden" id="lon" value="{{ lon }}">
-            <div class="input-group-append">
-              <button class="btn" type="submit"><i class="fas fa-search"></i></button>
-            </div>
+              <input type="search" id="search" class="form-control" placeholder="Search for a location" aria-label="Search" name="city">
+              <input type="hidden" id="lat" value="{{ lat }}">
+              <input type="hidden" id="lon" value="{{ lon }}">
+              <div class="input-group-append">
+                  <button class="btn" type="submit"><i class="fas fa-search"></i></button>
+              </div>
           </form>
-        </div>
       </div>
-      
-    <!-- Current Weather and Map -->
-    <div class="container-fluid mt-4"> 
-        <div class="row">
-          
-          <!-- Current Weather Column -->
-          <div class="col-lg-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">
-                  {{ current_weather.city }}, {{ current_weather.country }}
-                </h5>
-                <img src="{{ current_weather.icon }}" alt="Weather Icon" class="my-3" style="width: 80px;"> <!-- Increased size slightly for focus -->
-                <h6 class="card-subtitle mb-2 text-muted">
-                  <span class="badge badge-primary">{{ current_weather.weather_description }}</span>
-                </h6>
-                <div class="my-3">
-                  <span class="font-weight-bold" style="font-size: 1.5em;">{{ current_weather.temperature }}°C</span>
-                  <div class="text-muted">Feels like: {{ current_weather.feels_like }}°C</div>
-                </div>
-                <div class="my-4">
-                  <div class="row">
-                    <div class="col">
-                      Humidity: {{ current_weather.humidity }}%<br>
-                      Pressure: {{ current_weather.pressure }} hPa
-                    </div>
-                    <div class="col">
-                      Wind: {{ current_weather.wind_speed }} m/s<br>
-                      Visibility: {{ current_weather.visibility }} meters
-                    </div>
-                  </div>
-                </div>
+    </div>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          var searchForm = document.querySelector('.custom-search');
+          searchForm.addEventListener('submit', function(event) {
+              var searchInput = document.getElementById('search');
+              if (!searchInput.value.trim()) {
+                  event.preventDefault(); 
+                  alert('Please enter a valid city name.');
+              }
+          });
+      });
+    </script>
+<!-- Current Weather and Map -->
+<div class="container-fluid mt-4"> 
+  <div class="row">
+    <!-- Current Weather Column -->
+    <div class="col-lg-4">
+      <div class="card text-center">
+        <div class="card-body">
+          {% if current_weather %}
+          <h5 class="card-title">
+            {{ current_weather.city }}, {{ current_weather.country }}
+          </h5>
+          <img src="{{ current_weather.icon }}" alt="Weather Icon" class="my-3" style="width: 80px;">
+          <h6 class="card-subtitle mb-2 text-muted">
+            <span class="badge badge-primary">{{ current_weather.weather_description }}</span>
+          </h6>
+          <div class="my-3">
+            <span class="font-weight-bold" style="font-size: 1.5em;">{{ current_weather.temperature }}°C</span>
+            <div class="text-muted">Feels like: {{ current_weather.feels_like }}°C</div>
+          </div>
+          <div class="my-4">
+            <div class="row">
+              <div class="col">
+                Humidity: {{ current_weather.humidity }}%<br>
+                Pressure: {{ current_weather.pressure }} hPa
               </div>
-              <div class="card-footer text-muted">
-                <div class="row">
-                  <div class="col">Sunrise: {{ current_weather.sunrise }}</div>
-                  <div class="col">Sunset: {{ current_weather.sunset }}</div>
-                </div>
+              <div class="col">
+                Wind: {{ current_weather.wind_speed }} m/s<br>
+                Visibility: {{ current_weather.visibility }} meters
               </div>
             </div>
           </div>
-          <!-- Map Column -->
-          <div class="col-lg-8">
-            <div class="card">
-              <div class="card-body">
-                <h5 class="card-title">Weather Map</h5>
-                <div id="map" style="height: 400px;"> </div>
-                <div class="map-layer-controls"></div>
-              </div>
+          <div class="card-footer text-muted">
+            <div class="row">
+              <div class="col">Sunrise: {{ current_weather.sunrise }}</div>
+              <div class="col">Sunset: {{ current_weather.sunset }}</div>
             </div>
           </div>
+          {% else %}
+          <h5 class="card-title">Weather information unavailable</h5>
+          {% endif %}
         </div>
       </div>
+    </div>
+    <!-- Map Column -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Weather Map</h5>
+          <div id="map" style="height: 400px;"></div>
+          <div class="map-layer-controls"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- 5 Day Forecast -->
 <div class="card mt-3">
   <div class="card-body">
@@ -264,11 +273,11 @@ body {
             var apiKey = config.apiKey;
             var currentLayer = null;
             var layers = {
-            temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
-            pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
-            wind: L.OWM.wind({appId: apiKey, showLegend: true}),
-            clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
-            precip: L.OWM.precipitation({appId: apiKey, showLegend: true})
+            temp: L.OWM.temperature({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            pressure: L.OWM.pressure({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            wind: L.OWM.wind({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            clouds: L.OWM.clouds({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'}),
+            precip: L.OWM.precipitation({appId: apiKey, showLegend: true, legendPosition: 'bottomleft'})
             };
 
             var controlPanel = L.control({position: 'topright'});
@@ -324,8 +333,8 @@ body {
     document.querySelectorAll('.chart-toggle').forEach(button => {
       button.addEventListener('click', function() {
         var chartType = this.getAttribute('data-chart');
-        var chartSrc = '{{ url_for("static", filename="charts/") }}' + chartType + '_chart.png'; // Use Flask url_for to construct the URL
-        document.getElementById('weatherChart').src = chartSrc; // Update the chart image source
+        var chartSrc = '{{ url_for("static", filename="charts/") }}' + chartType + '_chart.png';
+        document.getElementById('weatherChart').src = chartSrc;
       });
     });
     </script>   
