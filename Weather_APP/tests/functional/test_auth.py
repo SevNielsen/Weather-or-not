@@ -1,13 +1,14 @@
 import pytest
 from werkzeug.security import generate_password_hash
 from website.models import Member, db
+from website import create_app
 
 
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
     # create a temporary app with common test config
-    app = create_test_app()
+    app = create_app()
     with app.app_context():
         db.create_all()
     yield app
