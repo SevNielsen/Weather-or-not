@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <title>Admin Login</title>
+    <script>
+        function togglePasswordVisibility() {
+            var passwordInput = document.getElementById("exampleInputPassword1");
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+            } else {
+                passwordInput.type = "password";
+            }
+        }
+    </script>
+</head>
+<body> 
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% if messages[0][0] == 'error' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ messages[0][1] }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{% endif %}
+{% endwith %}
+<div id="main-wrapper" class="container">
+  <div class="row justify-content-center">
+      <div class="col-xl-10">
+          <div class="card border-0">
+              <div class="card-body p-0">
+                  <div class="row no-gutters">
+                      <div class="col-lg-6">
+                          <div class="p-5">
+                              <div class="mb-5">
+                                  <h3 class="h4 font-weight-bold text-theme">Admin Login</h3>
+                              </div>
+
+                              <h6 class="h5 mb-0">Welcome to Admin Panel</h6>
+                              <p class="text-muted mt-2 mb-5">Please enter your username and password to login.</p>
+
+                              <form method="POST">
+                                  <div class="form-group">
+                                      <label for="exampleInputUsername1">Username</label>
+                                      <input type="text" class="form-control" id="exampleInputUsername1" name="username">
+                                  </div>
+                                  <div class="form-group mb-4">
+                                      <label for="exampleInputPassword1">Password</label>
+                                      <div class="input-group">
+                                          <input type="password" class="form-control" id="exampleInputPassword1" name="password2">
+                                          <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">Show</button>
+                                      </div>
+                                  </div>
+                                  <button type="submit" class="btn btn-primary">Login</button>
+                              </form>
+                          </div>
+                      </div>
+                      <div class="col-lg-6 d-none d-lg-inline-block">
+                          <div class="account-block rounded-right">
+                              <!-- You can add some images or decorative elements here for Admin panel -->
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <p class="text-muted text-center mt-3 mb-0">Don't have an account? <a href="/signup" class="text-primary ml-1">Sign Up</a></p>
+          <p class="text-muted text-center mt-3 mb-0">Sign in as Guest <a href="" class="text-primary ml-1">Guest Login</a></p>
+      </div>
+  </div>
+</div>
+</body>
+</html>
