@@ -1,13 +1,14 @@
 import pytest
 from werkzeug.security import generate_password_hash
 from website.models import Member, db
+from website import create_app
 
 
 @pytest.fixture
 def app():
     """Create and configure a new app instance for each test."""
     # create a temporary app with common test config
-    app = create_test_app()
+    app = create_app()
     with app.app_context():
         db.create_all()
     yield app
@@ -45,7 +46,7 @@ def test_signup(client, init_database):
     assert b'Account created successfully' in response.data
 
 def test_login(client, init_database):
-    response = client.post('/login2', data={
+    response = client.post('/login', data={
         'username': 'testuser',
         'password2': 'testpassword'
     }, follow_redirects=True)
@@ -75,4 +76,4 @@ def test_leafletMap_access_without_login(client):
 def test_config_endpoint(client):
     response = client.get('/config')
     assert response.status_code == 200
-    assert b'API key' in response.data
+    assert b'apiKey' in response.data

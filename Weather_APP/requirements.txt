@@ -4,3 +4,10 @@ python-dotenv
 Flask-Testing
 matplotlib
 twilio
+Mako==1.3.3
+alembic==1.13.1
+flask_migrate==4.0.7
+iniconfig==2.0.0
+pluggy==1.4.0
+pytest==8.1.1
+mock==1.12.1

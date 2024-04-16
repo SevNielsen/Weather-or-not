@@ -1,7 +1,7 @@
 import pytest
 from flask_testing import TestCase
 from website import create_app, db
-from website.models import User
+from website.models import Member
 
 class TestUserCRUD(TestCase):
     def create_app(self):
@@ -20,12 +20,12 @@ class TestUserCRUD(TestCase):
     def test_create_user(self):
         response = self.client.post('/register', data={'username': 'new_user', 'email': 'new_user@example.com', 'password': 'password'}, follow_redirects=True)
         self.assertEqual(response.status_code, 200)
-        user = User.query.filter_by(username='new_user').first()
+        user = Member.query.filter_by(username='new_user').first()
         self.assertIsNotNone(user)
         self.assertEqual(user.email, 'new_user@example.com')
 
     def test_read_user_profile(self):
-        user = User(username='john_doe', email='john_doe@example.com')
+        user = Member(username='john_doe', email='john_doe@example.com')
         db.session.add(user)
         db.session.commit()
 
@@ -34,23 +34,23 @@ class TestUserCRUD(TestCase):
         self.assertIn('john_doe@example.com', response.data.decode())
     
     def test_update_user_profile(self):
-        user = User(username='update_test', email='update_test@example.com')
+        user = Member(username='update_test', email='update_test@example.com')
         db.session.add(user)
         db.session.commit()
     
         response = self.client.post('/user/update_test/update', data={'email': 'new_email@example.com'}, follow_redirects=True)
         self.assert200(response)
-        updated_user = User.query.filter_by(username='update_test').first()
+        updated_user = Member.query.filter_by(username='update_test').first()
         self.assertEqual(updated_user.email, 'new_email@example.com')
 
     def test_delete_user(self):
-        user = User(username='delete_test', email='delete_test@example.com')
+        user = Member(username='delete_test', email='delete_test@example.com')
         db.session.add(user)
         db.session.commit()
     
         response = self.client.post('/user/delete_test/delete', follow_redirects=True)
         self.assert200(response)
-        deleted_user = User.query.filter_by(username='delete_test').first()
+        deleted_user = Member.query.filter_by(username='delete_test').first()
         self.assertIsNone(deleted_user)
    
 
