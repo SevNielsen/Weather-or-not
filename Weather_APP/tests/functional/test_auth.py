@@ -46,7 +46,7 @@ def test_signup(client, init_database):
     assert b'Account created successfully' in response.data
 
 def test_login(client, init_database):
-    response = client.post('/login2', data={
+    response = client.post('/login', data={
         'username': 'testuser',
         'password2': 'testpassword'
     }, follow_redirects=True)
@@ -76,4 +76,4 @@ def test_leafletMap_access_without_login(client):
 def test_config_endpoint(client):
     response = client.get('/config')
     assert response.status_code == 200
-    assert b'API key' in response.data
+    assert b'apiKey' in response.data
