@@ -1,6 +1,6 @@
 import pytest
 from flask_login import login_user, logout_user, current_user
-from website.models import User
+from website.models import Member
 from website import create_app, db
 
 @pytest.fixture
@@ -22,15 +22,15 @@ def client(app):
 @pytest.fixture
 def init_database(app):
     with app.app_context():
-        normal_user = User(username='normal_user', email='normal@example.com', is_admin=False)
-        admin_user = User(username='admin_user', email='admin@example.com', is_admin=True)
+        normal_user = Member(username='normal_user', email='normal@example.com', is_admin=False)
+        admin_user = Member(username='admin_user', email='admin@example.com', is_admin=True)
         db.session.add(normal_user)
         db.session.add(admin_user)
         db.session.commit()
     yield
     with app.app_context():
         db.session.remove()
-        User.query.delete()
+        Member.query.delete()
 
 def test_admin_access(client, init_database):
     with client:
