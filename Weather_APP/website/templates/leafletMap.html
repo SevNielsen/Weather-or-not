@@ -1,196 +1,186 @@
-{% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leaflet and OpenWeatherMap</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"> <!-- FontAwesome for icons -->
-    <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-        }
-        #map {
-            height: 100vh; /* Full height */
-            width: 100%; /* Full width */
-        }
-        .floating-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px; /* Align to the top-right corner */
-            z-index: 1000; /* Above the map */
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-        .bottom-left-controls {
-            position: absolute;
-            bottom: 80px; /* Adjust based on the total height of the dashboard button and padding */
-            left: 20px; /* Align to the bottom-left corner */
-            z-index: 1000; /* Above the map */
-            display: flex;
-            flex-direction: column;
-            align-items: center; /* Center-align the buttons */
-            gap: 8px;
-        }
-        .dashboard-btn-container {
-            position: absolute;
-            bottom: 20px;
-            left: 20px; /* Align to the bottom-left corner */
-            z-index: 1000; /* Above the map */
-            width: 120px; /* Set a fixed width to match the weather buttons */
-        }
-        .search-bar {
-            display: flex;
-            width: 300px; /* Adjust based on preference */
-        }
-        .search-bar input, .search-bar button, .btn {
-            width: 100%; /* Ensure all elements are the same width */
-        }
-        .search-bar input {
+{% extends "navbar.html" %}
+{% block title %}Weather Map{% endblock %}
 
-            border-radius: 30px 0 0 30px;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .search-bar button {
-            border-radius: 0 30px 30px 0;
-            padding: 10px;
-            font-size: 16px;
-        }
-        .btn, .dashboard-btn {
-            border-radius: 15px;
-            padding: 10px 0;
-        }
-    </style>
-</head>
-<body>
+{% block content %}
+<style>
+    /* Map Container */
+    #map-container {
+        position: relative;
+        height: calc(100vh - 56px);
+        /* Full height minus navbar */
+        width: 100%;
+        overflow: hidden;
+    }
+
+    #map {
+        height: 100%;
+        width: 100%;
+    }
+
+    /* Floating Controls */
+    .floating-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+    }
+
+    .bottom-left-controls {
+        position: absolute;
+        bottom: 30px;
+        left: 20px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    /* Search Bar */
+    .map-search {
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        padding: 5px;
+        display: flex;
+    }
+
+    .map-search input {
+        border: none;
+        background: transparent;
+        padding: 5px 15px;
+        outline: none;
+        width: 200px;
+    }
+
+    .map-search button {
+        border-radius: 20px;
+        padding: 5px 15px;
+    }
+
+    /* Control Buttons */
+    .btn-control {
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        text-align: left;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .btn-control:hover {
+        transform: translateX(5px);
+        background: white;
+    }
+
+    .btn-control.active {
+        background: #007bff;
+        color: white;
+    }
+</style>
+
+<div id="map-container">
     <div id="map"></div>
+
+    <!-- Top Right Search -->
     <div class="floating-controls">
-        <div class="search-bar">
-            <input type="text" id="searchInput" class="form-control" placeholder="Enter Location">
-            <button type="button" class="btn btn-primary" id="searchBtn">Search</button>
+        <div class="map-search">
+            <input type="text" id="searchInput" placeholder="Search location...">
+            <button class="btn btn-primary btn-sm" id="searchBtn"><i class="fas fa-search"></i></button>
         </div>
     </div>
+
+    <!-- Bottom Left Controls -->
     <div class="bottom-left-controls">
-        <button type="button" class="btn btn-outline-secondary btn-control" id="clouds">Clouds</button>
-        <button type="button" class="btn btn-outline-primary btn-control" id="precip">Precipitation</button>
-        <button type="button" class="btn btn-outline-warning btn-control" id="temp">Temperature</button>
-        <button type="button" class="btn btn-outline-success btn-control" id="pressure">Pressure</button>
-        <button type="button" class="btn btn-outline-info btn-control" id="wind">Wind</button>
-        <button type="button" class="btn btn-outline-danger btn-control" id="clearLayers">Clear</button>
+        <button class="btn-control" id="temp"><i class="fas fa-thermometer-half mr-2"></i> Temperature</button>
+        <button class="btn-control" id="precip"><i class="fas fa-cloud-rain mr-2"></i> Precipitation</button>
+        <button class="btn-control" id="clouds"><i class="fas fa-cloud mr-2"></i> Clouds</button>
+        <button class="btn-control" id="wind"><i class="fas fa-wind mr-2"></i> Wind</button>
+        <button class="btn-control" id="pressure"><i class="fas fa-tachometer-alt mr-2"></i> Pressure</button>
+        <button class="btn-control text-danger mt-2" id="clearLayers"><i class="fas fa-times mr-2"></i> Clear
+            Layers</button>
     </div>
-    <div class="dashboard-btn-container">
-        <button type="button" class="btn btn-primary dashboard-btn" onclick="window.location.href='/dashboard'">
-            <i class="fas fa-cloud-sun"></i> Dashboard
-        </button>
-    </div>
-    <!-- JavaScripts at the end for faster page loading -->
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='leaflet-openweathermap.css') }}">
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="{{ url_for('static', filename='leaflet-openweathermap.js') }}"></script>
+
 <script>
-    // Get coordinates passed from Flask
-    var lat = parseFloat("{{ lat }}");
-    var lon = parseFloat("{{ lon }}");
-    var map = L.map('map').setView([lat, lon], 13); // Use dynamic coordinates here with a default zoom level
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    var apiKey;
-    fetch('/config').then(response => response.json()).then(config => {
-        apiKey = config.apiKey; 
-        var layers = {
-            temp: L.OWM.temperature({appId: apiKey, showLegend: true}),
-            clouds: L.OWM.clouds({appId: apiKey, showLegend: true}),
-            precip: L.OWM.precipitation({appId: apiKey, showLegend: true}),
-            pressure: L.OWM.pressure({appId: apiKey, showLegend: true}),
-            wind: L.OWM.wind({appId: apiKey, showLegend: true})
-        };
-        function switchLayer(layer) {
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initialize Map
+        var lat = parseFloat("{{ lat }}") || 49.886;
+        var lon = parseFloat("{{ lon }}") || -119.496;
+        var map = L.map('map').setView([lat, lon], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        var apiKey;
+        var layers = {};
+        var currentLayer = null;
+
+        // Fetch Config
+        fetch('/config').then(r => r.json()).then(config => {
+            apiKey = config.apiKey;
+            layers = {
+                temp: L.OWM.temperature({ appId: apiKey, showLegend: true }),
+                clouds: L.OWM.clouds({ appId: apiKey, showLegend: true }),
+                precip: L.OWM.precipitation({ appId: apiKey, showLegend: true }),
+                pressure: L.OWM.pressure({ appId: apiKey, showLegend: true }),
+                wind: L.OWM.wind({ appId: apiKey, showLegend: true })
+            };
+        });
+
+        // Layer Switching
+        function switchLayer(layerId) {
+            // Remove all layers
             Object.values(layers).forEach(l => map.removeLayer(l));
-            if(layers[layer]) map.addLayer(layers[layer]);
+            document.querySelectorAll('.btn-control').forEach(b => b.classList.remove('active'));
+
+            // Add selected layer
+            if (layers[layerId]) {
+                map.addLayer(layers[layerId]);
+                document.getElementById(layerId).classList.add('active');
+            }
         }
-        // Event listeners for weather layer buttons
+
         document.querySelectorAll('.btn-control').forEach(btn => {
-            btn.addEventListener('click', () => switchLayer(btn.id));
+            if (btn.id !== 'clearLayers') {
+                btn.addEventListener('click', () => switchLayer(btn.id));
+            }
         });
-        document.getElementById('clearLayers').addEventListener('click', function() {
+
+        document.getElementById('clearLayers').addEventListener('click', function () {
             Object.values(layers).forEach(l => map.removeLayer(l));
+            document.querySelectorAll('.btn-control').forEach(b => b.classList.remove('active'));
         });
-    });
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent the form from submitting
-            var city = this.value.trim();
-            if(city) {
-                var searchUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
-                fetch(searchUrl)
-                    .then(response => response.json())
+
+        // Search
+        function performSearch() {
+            var city = document.getElementById('searchInput').value.trim();
+            if (city && apiKey) {
+                fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`)
+                    .then(r => r.json())
                     .then(data => {
-                        if(data && data.coord) { // Check if the coordinates are available
-                            map.setView([data.coord.lat, data.coord.lon], 10); // Center the map on the city
+                        if (data.coord) {
+                            map.setView([data.coord.lat, data.coord.lon], 10);
                         } else {
-                            alert("City not found or there's an error with the request.");
+                            alert('City not found');
                         }
-                    })
-                    .catch(error => {
-                        console.error("Error fetching city coordinates:", error);
-                        alert("Error fetching data for the city.");
                     });
             }
         }
-    });
 
-    document.getElementById('searchBtn').addEventListener('click', function() {
-            var input = document.getElementById('searchInput');
-            var event = new KeyboardEvent('keypress', {
-                'key': 'Enter'
-            });
-            input.dispatchEvent(event);
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+        document.getElementById('searchInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') performSearch();
         });
-        
-    // Map click event to display weather data in a popup
-    map.on('click', function(e) {
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${e.latlng.lat}&lon=${e.latlng.lng}&appid=${apiKey}&units=metric`)
-            .then(response => response.json())
-            .then(data => {
-                const popupContent = createWeatherPopupContent(data);
-                L.popup()
-                    .setLatLng(e.latlng)
-                    .setContent(popupContent)
-                    .openOn(map);
-            })
-            .catch(error => console.error("Error fetching weather data: ", error));
     });
-    function createWeatherPopupContent(data) {
-        // Use the CSS classes from leaflet-openweathermap.css for styling
-        let content = '<div class="owm-popup-name">' + (data.name ? `<a href="https://openweathermap.org/city/${data.id}" target="_blank">${data.name}</a>` : 'Unknown Location') + '</div>';
-        if(data.weather && data.weather[0]) {
-            content += '<div class="owm-popup-description">' + data.weather[0].description + '</div>';
-            content += '<div class="owm-popup-main"><img src="https://openweathermap.org/img/w/' + data.weather[0].icon + '.png" />';
-            content += '<span class="owm-popup-temp">' + Math.round(data.main.temp) + '&deg;C</span></div>';
-        }
-        content += '<div class="owm-popup-details">';
-        content += '<div class="owm-popup-detail">Humidity: ' + data.main.humidity + '%</div>';
-        content += '<div class="owm-popup-detail">Pressure: ' + data.main.pressure + ' hPa</div>';
-        if(data.wind) {
-            content += '<div class="owm-popup-detail">Wind Speed: ' + data.wind.speed + ' m/s</div>';
-        }
-        content += '</div>';
-        content += '<div class="owm-popup-timestamp">' + new Date(data.dt * 1000).toLocaleString() + '</div>';
-
-        return content;
-    }
 </script>
-</body>
-</html>
 {% endblock %}

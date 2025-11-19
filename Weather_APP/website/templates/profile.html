@@ -3,69 +3,85 @@
 {% block content %}
 <style>
     body {
-        background: linear-gradient(34deg, rgba(2,0,36,1) 0%, rgba(107,183,242,1) 0%, rgba(249,245,245,1) 100%);
+        background: linear-gradient(34deg, rgba(2, 0, 36, 1) 0%, rgba(107, 183, 242, 1) 0%, rgba(249, 245, 245, 1) 100%);
     }
+
     .container {
         display: flex;
         justify-content: center;
         align-items: center;
         min-height: 100vh;
     }
+
     .form-control:focus {
         box-shadow: none;
         border-color: #BA68C8;
     }
+
     .profile-button {
         background: rgb(99, 39, 120);
         border: none;
     }
-    .profile-button:hover, .profile-button:focus, .profile-button:active {
+
+    .profile-button:hover,
+    .profile-button:focus,
+    .profile-button:active {
         background: #682773;
     }
+
     .add-experience:hover {
         background: #BA68C8;
         color: #fff;
         border: 1px solid #BA68C8;
     }
+
     .custom-font {
-        font-family: 'Papyrus', sans-serif; 
+        font-family: 'Papyrus', sans-serif;
     }
+
     .switch {
         width: 60px;
         height: 34px;
     }
+
     .slider {
         background-color: #ccc;
     }
+
     .slider:before {
         background-color: white;
     }
-    input:checked + .slider {
+
+    input:checked+.slider {
         background-color: #2196F3;
     }
-    input:focus + .slider {
+
+    input:focus+.slider {
         box-shadow: 0 0 1px #2196F3;
     }
-    input:checked + .slider:before {
+
+    input:checked+.slider:before {
         transform: translateX(26px);
     }
+
     .slider.round {
         border-radius: 34px;
     }
+
     .slider.round:before {
         border-radius: 50%;
     }
 </style>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    var checkBox = document.getElementById("myCheck");
-    var hiddenInput = document.querySelector("input[name='check']");
-    
-    checkBox.addEventListener("change", function() {
-        hiddenInput.value = checkBox.checked ? "1" : "0";
+    document.addEventListener("DOMContentLoaded", function () {
+        var checkBox = document.getElementById("myCheck");
+        var hiddenInput = document.querySelector("input[name='check']");
+
+        checkBox.addEventListener("change", function () {
+            hiddenInput.value = checkBox.checked ? "1" : "0";
+        });
     });
-});
 </script>
 
 <div class="container rounded bg-white mt-5 mb-5">
@@ -73,7 +89,8 @@ document.addEventListener("DOMContentLoaded", function() {
         <div class="col-md-6 border-right">
             <h2 class="text-center custom-font">Profile</h2>
             <div class="d-flex flex-column align-items-center text-center p-3 py-5">
-                <img class="rounded-circle mt-5" width="150px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+                <img class="rounded-circle mt-5" width="150px"
+                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
                 <span class="font-weight-bold">{{firstName}} {{lastName}}</span>
                 <span class="text-black-50">{{email}}</span>
                 <span class="text-black-50">{{username}}</span>
@@ -92,23 +109,31 @@ document.addEventListener("DOMContentLoaded", function() {
                 </div>
                 <form method="POST">
                     <div class="row mt-2">
-                        <div class="col-md-6"><label class="labels">First Name</label><input type="text" class="form-control" placeholder="first name" value="" name="first_name"></div>
-                        <div class="col-md-6"><label class="labels">Last Name</label><input type="text" class="form-control" placeholder="last name" value="" name="last_name"></div>
+                        <div class="col-md-6"><label class="labels">First Name</label><input type="text"
+                                class="form-control" placeholder="first name" value="" name="first_name"></div>
+                        <div class="col-md-6"><label class="labels">Last Name</label><input type="text"
+                                class="form-control" placeholder="last name" value="" name="last_name"></div>
                     </div>
                     <div class="row mt-3">
-                        <div class="col-md-12"><label class="labels">Email</label><input type="email" class="form-control" placeholder="enter email" value="" name="email"></div>
-                        <div class="col-md-12"><label class="labels">Preferred City</label><input type="text" class="form-control" placeholder="city" value="" name="city"></div>
-                        <div class="col-md-12"><label class="labels">Phone Number</label><input type="text" class="form-control" placeholder="enter phone number" value="" name="phone_number"></div>
+                        <div class="col-md-12"><label class="labels">Email</label><input type="email"
+                                class="form-control" placeholder="enter email" value="" name="email"></div>
+                        <div class="col-md-12"><label class="labels">Preferred City</label><input type="text"
+                                class="form-control" placeholder="city" value="" name="city"></div>
+                        <div class="col-md-12"><label class="labels">Phone Number</label><input type="text"
+                                class="form-control" placeholder="enter phone number" value="" name="phone_number">
+                        </div>
                     </div>
                     <div class="row mt-3">
                         <span class="text-black-100" style="font-size:18px;">Notifications:
                             <label class="switch">
-                                <input type="checkbox" id="myCheck" name="check" {% if notifications %} checked {% endif %}>
+                                <input type="checkbox" id="myCheck" name="check" {% if notifications %} checked {% endif
+                                    %}>
                                 <span class="slider round"></span>
                             </label>
                         </span>
                     </div>
-                    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Save Profile</button></div>
+                    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="submit">Save
+                            Profile</button></div>
                 </form>
             </div>
         </div>

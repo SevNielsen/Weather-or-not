@@ -18,7 +18,10 @@ from .weather_utils import (
     fetch_forecast_data, process_forecast_data,
     create_temperature_chart, create_humidity_chart,
     create_wind_speed_chart, create_pressure_chart,
-    create_comparison_chart )
+    create_comparison_chart, create_precipitation_chart,
+    create_feels_like_chart, create_snow_chart,
+    create_air_quality_chart, fetch_forecast_air_quality_data,
+    process_forecast_air_quality_data )
 
 
 # Initialize the Blueprint for authentication routes
@@ -101,9 +104,12 @@ def sign_up():
         city = request.form.get('city')
 
         member = Member.query.filter_by(username = username).first()
+        member_email = Member.query.filter_by(email=email).first()
+
         if member:
-            flash("member already exists", category='error')
-            #return redirect(url_for('auth.sign_up'))
+            flash("Username already exists", category='error')
+        elif member_email:
+            flash("Email already exists", category='error')
 
     
         elif firstName is None or lastName is None or email is None or password is None or username is None:
@@ -164,6 +170,15 @@ def dashboard():
             chart_paths['wind_speed_chart'] = create_wind_speed_chart(forecasts, 'website/static/charts/wind_speed_chart.png')
             chart_paths['pressure_chart'] = create_pressure_chart(forecasts, 'website/static/charts/pressure_chart.png')
             chart_paths['comparison_chart'] = create_comparison_chart(forecasts, 'website/static/charts/comparison_chart.png')
+            chart_paths['precipitation_chart'] = create_precipitation_chart(forecasts, 'website/static/charts/precipitation_chart.png')
+            chart_paths['feels_like_chart'] = create_feels_like_chart(forecasts, 'website/static/charts/feels_like_chart.png')
+            chart_paths['snow_chart'] = create_snow_chart(forecasts, 'website/static/charts/snow_chart.png')
+
+            # Air Quality
+            aqi_data = fetch_forecast_air_quality_data(city)
+            if aqi_data:
+                processed_aqi = process_forecast_air_quality_data(aqi_data)
+                chart_paths['air_quality_chart'] = create_air_quality_chart(processed_aqi, 'website/static/charts/air_quality_chart.png')
     else:
         # Use preferred city on initial GET request
         lat, lon = fetch_coordinates(city)

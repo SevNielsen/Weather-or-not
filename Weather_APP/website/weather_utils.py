@@ -108,6 +108,8 @@ def process_forecast_data(forecast_json):
                 'date': f"{weekday_name}, {day}/{month}",
                 'max_temp': int(main_data.get('temp_max')),
                 'min_temp': int(main_data.get('temp_min')),
+                'feels_like': int(main_data.get('feels_like')),
+                'pop': int(forecast.get('pop', 0) * 100), # Probability of precipitation
                 'description': weather_data.get('description'),
                 'icon': f"https://openweathermap.org/img/wn/{weather_data.get('icon')}@2x.png",
                 'humidity': main_data.get('humidity'),
@@ -336,6 +338,58 @@ def create_comparison_chart(processed_forecasts, chart_path='website/static/char
     lines3, labels3 = ax3.get_legend_handles_labels()
     ax1.legend(lines + lines2 + lines3, labels + labels2 + labels3, loc='best', fontsize=FONT_SIZE)
 
+    save_chart(chart_path)
+
+
+def create_precipitation_chart(processed_forecasts, chart_path='website/static/charts/precipitation_chart.png'):
+    days = [forecast['date'] for forecast in processed_forecasts]
+    pops = [forecast['pop'] for forecast in processed_forecasts]
+
+    create_chart_base('5-Day Forecast: Precipitation Probability', 'Day', 'Probability (%)')
+    plt.bar(days, pops, color='blue', alpha=0.7)
+    plt.ylim(0, 100)
+    save_chart(chart_path)
+
+def create_feels_like_chart(processed_forecasts, chart_path='website/static/charts/feels_like_chart.png'):
+    days = [forecast['date'] for forecast in processed_forecasts]
+    max_temps = [forecast['max_temp'] for forecast in processed_forecasts]
+    feels_like = [forecast['feels_like'] for forecast in processed_forecasts]
+
+    create_chart_base('5-Day Forecast: Actual vs Feels Like', 'Day', 'Temperature (Celsius)')
+    plt.plot(days, max_temps, label='Actual Max Temp', marker='o', color='red', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.plot(days, feels_like, label='Feels Like', marker='s', linestyle='--', color='orange', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.legend(fontsize=FONT_SIZE)
+    save_chart(chart_path)
+
+def create_snow_chart(processed_forecasts, chart_path='website/static/charts/snow_chart.png'):
+    days = [forecast['date'] for forecast in processed_forecasts]
+    # Filter pop: only show if temp is low enough for snow (e.g. < 2C) or description contains snow
+    # For simplicity, let's plot the general precipitation probability but color it for snow
+    # A better approach: Check if forecast description implies snow
+    snow_probs = []
+    for forecast in processed_forecasts:
+        is_snow = 'snow' in forecast['description'].lower() or forecast['max_temp'] < 2
+        snow_probs.append(forecast['pop'] if is_snow else 0)
+
+    create_chart_base('5-Day Forecast: Snow Probability', 'Day', 'Probability (%)')
+    plt.bar(days, snow_probs, color='#00d2ff', alpha=0.7) # Cyan/Ice color
+    plt.ylim(0, 100)
+    save_chart(chart_path)
+
+def create_air_quality_chart(processed_aqi, chart_path='website/static/charts/air_quality_chart.png'):
+    if not processed_aqi:
+        return
+        
+    # Limit to first 8 points (approx 24h if 3h steps)
+    subset = processed_aqi[:8] 
+    times = [entry['dt'].split(' ')[1][:5] for entry in subset] # HH:MM
+    aqis = [entry['aqi'] for entry in subset]
+    
+    create_chart_base('Air Quality Forecast (Next 24h)', 'Time', 'AQI (1-5)')
+    plt.plot(times, aqis, label='AQI', marker='o', color='green', linewidth=LINE_WIDTH, markersize=MARKER_SIZE)
+    plt.yticks([1, 2, 3, 4, 5], ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'])
+    plt.ylim(0.5, 5.5)
+    plt.legend(fontsize=FONT_SIZE)
     save_chart(chart_path)
 
 
